@@ -25,6 +25,7 @@ class WordCounter(Computation):
         else: self.dict[record.key] = 1
 
     def metadata(self):
-        return Metadata(name='word-counter', istreams=['words'], ostreams=[])
+        return Metadata(name='word-counter', ostreams=[],
+                        istreams=[('words', StreamGrouping.GROUP_BY)])
 
 serve_computation(WordCounter())

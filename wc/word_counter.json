@@ -5,6 +5,6 @@
   "executable_name": "runner.bash",
   "compress_files": ["word_counter.py", "runner.bash", "requirements.txt"],
   "computation_name": "word-counter",
-  "mem": 1024,
-  "cpus": 1.0
+  "mem": 512,
+  "cpus": 0.5
 }

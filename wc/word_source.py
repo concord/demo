@@ -5,7 +5,8 @@ import concord
 from concord.computation import (
     Computation,
     Metadata,
-    serve_computation
+    serve_computation,
+    StreamGrouping
 )
 
 def time_millis():

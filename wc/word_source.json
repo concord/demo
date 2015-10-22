@@ -5,6 +5,6 @@
   "executable_name": "runner.bash",
   "compress_files": ["word_source.py", "runner.bash", "words.data", "requirements.txt"],
   "computation_name": "word-source",
-  "mem": 1024,
-  "cpus": 1.0
+  "mem": 512,
+  "cpus": 0.5
 }
