@@ -27,7 +27,10 @@ class WordSource(Computation):
         if len(self.db) == 0:
             log.info("Done emitting all words - harakiri")
             sys.exit(0)
-        ctx.produce_record("words", self.db.pop(), '-')
+        i = 0
+        while i < 100000:
+            i += 1
+            ctx.produce_record("words", self.db.pop(), '-')
         # emit one word at least every second - shuffle for monitor tools
         ctx.set_timer(key, time_millis() + random.randint(0,1000))
 
