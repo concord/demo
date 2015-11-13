@@ -31,7 +31,8 @@ class WordSource(Computation):
         i = 0
         while i < 100000:
             i += 1
-            ctx.produce_record("words", self.db.pop(), '-')
+            word = self.db.pop()
+            ctx.produce_record("words", word, word)
         # emit one word at least every second - shuffle for monitor tools
         ctx.set_timer(key, time_millis() + random.randint(0,1000))
 
