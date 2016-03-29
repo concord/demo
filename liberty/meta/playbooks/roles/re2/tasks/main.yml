@@ -1,8 +1,7 @@
 ---
 
 - name: Build re2
-  shell: "/usr/bin/make -j{{ansible_processor_vcpus}} && \
-          /usr/bin/make install -j{{ansible_processor_vcpus}}"
+  shell: "/usr/bin/make -j{{ansible_processor_vcpus}}"
   args:
     chdir: '{{bolt_cache_dir}}/{{re2_src_dir}}'
     creates: '{{bolt_cache_dir}}/{{re2_src_dir}}/obj/{{re2_lib_name}}'
