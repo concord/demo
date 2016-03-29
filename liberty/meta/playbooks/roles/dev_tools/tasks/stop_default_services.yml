@@ -1,0 +1,12 @@
+---
+
+# Example action to start service httpd, if not running
+- name: prevent services from starting in the devbox machine
+  sudo: yes
+  service: name='{{item}}' state=stopped enabled=no
+  with_items:
+    - zookeeper
+    - docker
+    - mesos-master
+    - mesos-slave
+  when: ("{{item}}.stat.exists") == True

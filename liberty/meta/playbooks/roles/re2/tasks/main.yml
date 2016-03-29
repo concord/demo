@@ -1,0 +1,40 @@
+---
+
+- name: Build re2
+  shell: "/usr/bin/make -j{{ansible_processor_vcpus}}"
+  args:
+    chdir: '{{bolt_cache_dir}}/{{re2_src_dir}}'
+    creates: '{{bolt_cache_dir}}/{{re2_src_dir}}/obj/{{re2_lib_name}}'
+
+- name: Perform manual install -- copy libs into toor
+  copy: src='{{ item }}'
+        dest='{{bolt_chroot_dir}}/lib'
+  with_items:
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/obj/{{re2_lib_name}}'
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/obj/so/{{re2_solib_name}}'
+
+- name: Perform manual install -- create include/re2 dir
+  file: state=directory
+        dest='{{bolt_chroot_dir}}/include/re2'
+        
+- name: Perform manual install -- copy headers
+  copy: src='{{ item }}'
+        dest='{{bolt_chroot_dir}}/include/re2'
+        mode=0644
+  with_items:
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/re2/filtered_re2.h'
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/re2/re2.h'
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/re2/set.h'
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/re2/stringpiece.h'
+    - '{{bolt_cache_dir}}/{{re2_src_dir}}/re2/variadic_function.h'
+  
+- name: Make alias to re2 dynamic lib
+  file: state=link
+        src='{{re2_solib_name}}'
+        dest='{{bolt_chroot_dir}}/lib/libre2.so.0.0.0'
+
+- name: Make another alias to re2 dynamic lib
+  file: state=link
+        src='{{re2_solib_name}}'
+        dest='{{bolt_chroot_dir}}/lib/libre2.so'
+        

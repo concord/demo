@@ -1,0 +1,8 @@
+---
+
+dependencies:
+  - { role: dev_common }
+  - { role: lib_checkout,
+      library_version: '018dc0e',
+      library_checkout_dir: '{{bolt_cache_dir}}/hyperloglog',
+      library_repo: 'https://github.com/hideo55/cpp-HyperLogLog.git' }

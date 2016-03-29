@@ -1,0 +1,8 @@
+---
+
+dependencies:
+  - { role: dev_common }
+  - { role: lib_checkout,
+      library_version: '{{folly_version}}',
+      library_checkout_dir: '{{bolt_cache_dir}}/{{folly_dir}}',
+      library_repo: 'https://github.com/facebook/folly.git' }

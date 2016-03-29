@@ -1,0 +1,9 @@
+---
+folly_src_dir: 'folly-0.57.0/folly'
+folly_dir: 'folly-0.57.0'
+folly_lib_name: 'libfolly.a'
+folly_lib_name_alias: 'libfolly-0.57.0.a'
+folly_version: 'tags/v0.57.0'
+
+build_env:
+  PATH: '{{bolt_cache_dir}}/{{folly_src_dir}}:{{ansible_env.PATH}}'

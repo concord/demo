@@ -5,8 +5,13 @@ set(VERSION 0.1.0)
 link_directories (
   /usr/local/lib
   /usr/lib/x86_64-linux-gnu
+  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/lib
   )
 
+include_directories (
+  SYSTEM
+  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/include
+  )
 
 set (CPP_CLIENT_LIBRARIES
   :libbolt_cpp_client.so
@@ -15,6 +20,7 @@ set (CPP_CLIENT_LIBRARIES
   :libthrift-0.9.2.so
   :libthriftz-0.9.2.so
   :libglog.so.0.0.0
+  :libgflags.so.2.1.0
   :libpthread.so
   :libdouble-conversion.so.1.0
   :libboost_system.so.1.55.0
@@ -27,6 +33,8 @@ set (CPP_CLIENT_LIBRARIES
   :libunwind.so.8
   :libpthread.so.0
   :libz.so.1.2.8
+  libre2.a
+  :libgflags.so.2
   )
 
 set(BASE_FLAGS
@@ -64,15 +72,13 @@ function (join VALUES SEP OUTPUT)
   set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 endfunction ()
 
-
 set (CMAKE_CXX_COMPILER g++-4.9)
 set (CMAKE_C_COMPILER gcc-4.9)
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -v" )
 join ("${CXX_FLAG_LIST}" " " CMAKE_CXX_FLAGS)
 join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
-add_executable (sentence_splitter ${PROJECT_SOURCE_DIR}/sentence_splitter.cc)
-target_link_libraries (sentence_splitter ${CPP_CLIENT_LIBRARIES})
-add_executable (sentence_generator ${PROJECT_SOURCE_DIR}/sentence_generator.cc)
-target_link_libraries (sentence_generator ${CPP_CLIENT_LIBRARIES})
-add_executable (word_counter ${PROJECT_SOURCE_DIR}/word_counter.cc)
-target_link_libraries (word_counter ${CPP_CLIENT_LIBRARIES})
+add_executable (log_counter ${PROJECT_SOURCE_DIR}/src/log_counter.cc)
+target_link_libraries (log_counter ${CPP_CLIENT_LIBRARIES})
+add_executable (windowed_log_counter ${PROJECT_SOURCE_DIR}/src/windowed_log_counter.cc)
+target_link_libraries (windowed_log_counter ${CPP_CLIENT_LIBRARIES})
+
