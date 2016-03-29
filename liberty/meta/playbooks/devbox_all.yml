@@ -1,0 +1,9 @@
+---
+
+- name: Install dev env
+  hosts: localhost
+  roles:
+    - dev_common
+    - dev_tools
+    - folly
+    - re2

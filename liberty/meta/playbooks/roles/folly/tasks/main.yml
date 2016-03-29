@@ -1,0 +1,31 @@
+---
+
+- name: Autoreconf -ivf
+  environment: '{{build_env}}'
+  command:
+    autoreconf -ivf
+  args:
+    chdir: '{{bolt_cache_dir}}/{{folly_src_dir}}'
+    creates: '{{bolt_cache_dir}}/{{folly_src_dir}}/configure'
+
+- name: Bootstrap folly
+  command:
+    ./configure --with-pic --prefix={{bolt_chroot_dir}}
+  args:
+    chdir: '{{bolt_cache_dir}}/{{folly_src_dir}}'
+    creates: '{{bolt_cache_dir}}/{{folly_src_dir}}/Makefile'
+
+- name: build && install folly
+  shell:
+    "FOLLY_HAVE_PTHREAD_ATFORK=1 \
+     /usr/bin/make -j{{ansible_processor_vcpus}} && \
+     /usr/bin/make install -j{{ansible_processor_vcpus}}"
+  args:
+    chdir: '{{bolt_cache_dir}}/{{folly_src_dir}}'
+    creates: '{{bolt_chroot_dir}}/lib/{{folly_lib_name}}'
+
+- name: make alias to folly static library
+  file: state=link
+        src={{folly_lib_name}}
+        dest={{bolt_chroot_dir}}/lib/{{folly_lib_name_alias}}
+

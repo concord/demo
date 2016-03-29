@@ -1,0 +1,19 @@
+---
+
+- include: ppa.yml
+  when: ansible_os_family == 'Debian'
+
+- include: tools.yml
+  when: ansible_os_family == 'Debian'
+
+- include: deb.yml
+  when: ansible_os_family == 'Debian'
+
+- include: alternatives.yml
+  when: ansible_os_family == 'Debian'
+
+- include: stop_default_services.yml
+  when: ansible_os_family == 'Debian'
+
+- include: pip_tools.yml
+  when: ansible_os_family == 'Debian'

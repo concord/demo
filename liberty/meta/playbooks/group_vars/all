@@ -1,0 +1,7 @@
+---
+
+bolt_cache_dir: '{{inventory_dir}}/.bolt'
+bolt_chroot_dir: '{{bolt_cache_dir}}/toor'
+user_bin_dir: '{{ansible_env.HOME}}/bin'
+git_user_name: 'concord tech'
+git_user_email: 'hello@concord.io'

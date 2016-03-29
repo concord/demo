@@ -1,0 +1,87 @@
+---
+
+
+- name: Install all dev system tools
+  sudo: yes
+  apt:
+    name='{{item}}'
+    state=installed
+    update_cache=yes
+    cache_valid_time=3600
+    force=yes
+  with_items:
+    - 'apt-transport-https'
+    - 'build-essential'
+    - 'g++-4.8'
+    - 'gcc-4.8'
+    - 'gcc-4.8-doc'
+    - 'g++-5'
+    - 'gcc-5'
+    - 'gcc-5-doc'
+    - 'ccache'
+    - 'cmake'
+    - 'git'
+    - 'git-extras'
+    - 'binutils-gold'
+    - 'ccache'
+    - 'inotify-tools'
+    - 'linux-tools-common'
+    - 'linux-tools-generic'
+    - 'linux-tools-lowlatency'
+    - 'flex'
+    - 'bison'
+    - 'pkg-config'
+    - 'autoconf'
+    - 'autoconf-archive'
+    - 'automake'
+    - 'make'
+    - 'autotools-dev'
+    - 'binutils-dev'
+    - 'libtool'
+    - 'bzip2'
+    - 'python3-software-properties'
+    - 'libntl-dev'
+    - 'libmpfrc++-dev'
+    - 'python-dev'
+    - 'python3.4-dev'
+    - 'libnuma-dev' # rocksdb
+    - 'libsasl2-dev' # mesos
+    - 'libssl-dev' # mesos, thrift
+    - 'libgflags-dev' # rocksdb, mesos, etc
+    - 'mesos=0.23.1-0.2.61.ubuntu1404'
+    - 'libboost1.55-all-dev' # libbolt.so
+    - 'libevent-dev' # thrift
+    - 'libdouble-conversion-dev' # rocksdb
+    - 'liblz4-dev' # rocksdb
+    - 'liblzma-dev' # rocksdb
+    - 'libsnappy-dev' # rocksdb
+    - 'zlib1g-dev' # libbolt.so
+    - 'libjemalloc-dev' # libbolt.so
+    - 'libprotobuf-dev' # mesos
+    - 'libbz2-dev' # libbolt.so
+    - 'lzma-dev' # libbolt.so
+    - 'protobuf-compiler' # mesos
+    - 'libunwind8-dev' # libbolt.so
+    - 'python-setuptools' # general needed
+    - 'libffi-dev' # mesos
+    - 'python-pip'
+    - 'python3-pip'
+    - 'python-protobuf'
+    - 'libarchive-dev' # libbolt.so
+    - 'clang-3.6' # compiler
+    - 'clang-format-3.6' # compiler needed
+    - 'clang-modernize-3.6' # compiler formatter
+    - 'libclang-3.6-dev' # needs for irony server
+    - 'doxygen' # needed for docs
+    - 'lttng-tools' # perf & tracing
+    - 'lttng-modules-dkms'
+    - 'liblttng-ust-dev'
+    - 'ninja-build' # faster than makefiles for cmake output
+    - 'sbt'
+    - 'libgoogle-glog-dev'
+
+- name: make freeze packages
+  sudo: yes
+  command: apt-mark hold '{{item}}'
+  with_items:
+    - 'mesos'

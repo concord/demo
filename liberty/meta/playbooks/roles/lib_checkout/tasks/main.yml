@@ -1,0 +1,13 @@
+---
+
+- name: Check if library has been checked out to "{{library_checkout_dir}}"
+  stat: path={{library_checkout_dir}}
+  register: st
+
+- name: "Check out library from git {{library_repo}}"
+  git: repo={{library_repo}}
+       version={{library_version}}
+       dest={{library_checkout_dir}}
+       force=yes
+       clone=yes
+  when: (st.stat.isdir is defined and not st.stat.isdir) or st.stat.isdir is not defined
