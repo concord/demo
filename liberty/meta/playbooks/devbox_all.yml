@@ -7,3 +7,4 @@
     - dev_tools
     - folly
     - re2
+    - hyperloglog
