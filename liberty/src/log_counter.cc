@@ -1,18 +1,21 @@
 #include <gflags/gflags.h>
 #include <hyperloglog/hyperloglog.hpp>
 #include <concord/glog_init.hpp>
-#include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
-
+#include "WindowedComputation.hpp"
+using namespace concord;
 DEFINE_string(kafka_topic,
-	      "default_topic",
+              "default_topic",
               "Kafka topic that consumer is reading from");
 
-class LogCounter final : public bolt::Computation {
+class LogCounter final : public WindowedComputation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
 
-  LogCounter(const std::string &topic) : hll_(10), kafkaTopic_(topic) {}
+  LogCounter(const std::string &topic)
+    : WindowedComputation(std::chrono::seconds(10), std::chrono::seconds(10))
+    , hll_(10)
+    , kafkaTopic_(topic) {}
 
   virtual void init(CtxPtr ctx) override {
     LOG(INFO) << "Log Counter initialized.. ready for events";
@@ -36,6 +39,8 @@ class LogCounter final : public bolt::Computation {
     m.istreams.insert({kafkaTopic_, bolt::Grouping::GROUP_BY});
     return m;
   }
+
+  virtual void test() {}
 
   private:
   hll::HyperLogLog hll_;
