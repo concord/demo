@@ -20,6 +20,7 @@ set (CPP_CLIENT_LIBRARIES
   :libthrift-0.9.2.so
   :libthriftz-0.9.2.so
   :libglog.so.0.0.0
+  :libgflags.so.2.1.0
   :libpthread.so
   :libdouble-conversion.so.1.0
   :libboost_system.so.1.55.0
@@ -32,7 +33,7 @@ set (CPP_CLIENT_LIBRARIES
   :libunwind.so.8
   :libpthread.so.0
   :libz.so.1.2.8
-  libre2.a
+  libre2.a  
   )
 
 set(BASE_FLAGS
