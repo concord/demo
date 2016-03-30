@@ -5,12 +5,12 @@ set(VERSION 0.1.0)
 link_directories (
   /usr/local/lib
   /usr/lib/x86_64-linux-gnu
-  ${PROJECT_SOURCE_DIR}/meta/.bolt/toor/lib
+  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/lib
   )
 
 include_directories (
   SYSTEM
-  ${PROJECT_SOURCE_DIR}/meta/.bolt/toor/include
+  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/include
   )
 
 set (CPP_CLIENT_LIBRARIES
@@ -33,7 +33,7 @@ set (CPP_CLIENT_LIBRARIES
   :libunwind.so.8
   :libpthread.so.0
   :libz.so.1.2.8
-  libre2.a  
+  libre2.a
   )
 
 set(BASE_FLAGS
