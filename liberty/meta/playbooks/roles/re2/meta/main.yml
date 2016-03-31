@@ -1,8 +1,0 @@
----
-
-dependencies:
-  - { role: dev_common }
-  - { role: lib_checkout,
-      library_version: '{{re2_version}}',
-      library_checkout_dir: '{{bolt_cache_dir}}/{{re2_dir}}',
-      library_repo: 'https://github.com/google/re2.git' }

@@ -1,10 +1,9 @@
 ---
 
-- name: Install dev env
+- name: Install & build all development dependencies
   hosts: localhost
   roles:
-    - dev_common
-    - dev_tools
+    - java
     - folly
-    - re2
-    - hyperloglog
+    - nvml
+    - wangle # depends on folly being first

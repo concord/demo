@@ -1,9 +1,0 @@
----
-re2_src_dir: 're2-1.0'
-re2_dir: 're2-1.0'
-re2_lib_name: 'libre2.a'
-re2_solib_name: 'libre2.so.0'
-re2_version: 'tags/2016-03-01'
-
-build_env:
-  PATH: '{bolt_cache_dir}}/{{re2_src_dir}}:{{ansible_env.PATH}}'
