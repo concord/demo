@@ -1,0 +1,22 @@
+---
+
+- name: Sync soure from git
+  git:
+    repo='https://github.com/jvirkki/libbloom.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/libbloom'
+    update=yes
+    recursive=yes
+    version='3b9a2b7'
+    force=yes
+    # git tag - v1.1
+
+- command: make -j{{ansible_processor_vcpus}}
+  args:
+    chdir: '{{goobly_cache_dir}}/libbloom'
+    creates: '{{goobly_cache_dir}}/libbloom/build/libbloom.so'
+
+- copy:
+    src="{{goobly_cache_dir}}/libbloom/bloom.h"
+    dest="{{third_party_dir}}/include/bloom.h"

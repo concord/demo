@@ -5,12 +5,12 @@ set(VERSION 0.1.0)
 link_directories (
   /usr/local/lib
   /usr/lib/x86_64-linux-gnu
-  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/lib
+  ${PROJECT_SOURCE_DIR}/third_party/lib
   )
 
 include_directories (
   SYSTEM
-  ${PROJECT_SOURCE_DIR}/meta/tmp/toor/include
+  ${PROJECT_SOURCE_DIR}/third_party/include
   )
 
 set (CPP_CLIENT_LIBRARIES
@@ -24,7 +24,7 @@ set (CPP_CLIENT_LIBRARIES
   :libpthread.so
   :libdouble-conversion.so.1.0
   :libboost_system.so.1.55.0
-  :libevent.a # Hack couldn't get libevent to link
+  :libevent.a
   :libglog.so.0
   :libstdc++.so.6
   :libssl.so.1.0.0
