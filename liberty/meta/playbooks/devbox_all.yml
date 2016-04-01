@@ -10,3 +10,4 @@
     - re2
     - hyperloglog
     - librdkafka
+    - cityhash

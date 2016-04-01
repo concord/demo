@@ -104,3 +104,17 @@ target_link_libraries (
   re2
   rdkafka
   )
+
+add_executable (
+  kafka_fill
+  ${PROJECT_SOURCE_DIR}/src/kafka/fill.cc
+  )
+target_link_libraries (
+  kafka_fill
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
+  :librdkafka.a
+  :librdkafka++.a
+  cityhash.a
+  )
+
