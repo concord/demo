@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <sstream>
 #include <bloom.h>
-
+#include <re2/re2.h>
 #include <concord/glog_init.hpp>
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
@@ -38,10 +38,18 @@ class Unique final : public bolt::Computation {
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
+    static RE2 regex("-\\s(\\d+)\\s\\d+\\.\\d+\\.\\d+\\s\\w+\\s\\w+\\s\\d+\\s\\d+:\\d+:\\d+\\s\\w+@\\w+(.*)$");
     ++recordCount_;
-    if(bloom_check(&bloom_, (void *)r.value.c_str(), r.value.length()) == 0) {
-      ++uniqueRecords_;
-      bloom_add(&bloom_, (void *)r.value.c_str(), r.value.length());
+    long date = 0;
+    std::string log = "";
+
+    if(RE2::FullMatch(r.value, regex, &date, &log)) {
+      date *= 1000; // millis
+      if(bloom_check(&bloom_, (void *)log.c_str(), log.length()) == 0) {
+        bloom_add(&bloom_, (void *)log.c_str(), log.length());
+        ++uniqueRecords_;
+        // produce to kafka
+      }
     }
   }
 

@@ -101,4 +101,5 @@ target_link_libraries (
   unique
   ${BASE_CPP_CLIENT_LIBRARIES}
   bloom
+  re2
   )
