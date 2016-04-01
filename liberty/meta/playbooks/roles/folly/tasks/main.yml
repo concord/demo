@@ -38,7 +38,6 @@
     recursive=yes
     version='efdf227'
     force=yes
-    #version needed for proxygen > 57.0
 
 - command: autoreconf -ivf
   args:
