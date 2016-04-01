@@ -8,27 +8,44 @@
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
 
+std::ostream &operator<<(std::ostream &o, const struct bloom &bloom) {
+  o << "Bloom filter: { ->entries = " << bloom.entries << ","
+    << " ->error = " << bloom.error << ", ->bits = " << bloom.bits
+    << ", ->bits per elem = " << bloom.bpe << ", ->bytes = " << bloom.bytes
+    << ", ->buckets = " << bloom.buckets
+    << ", ->bucket_bytes = " << bloom.bucket_bytes
+    << ", ->bucket_bytes_exponent = " << bloom.bucket_bytes_exponent
+    << " ->bucket_bits_fast_mod_operand = "
+    << bloom.bucket_bits_fast_mod_operand
+    << ", ->hash functions = " << bloom.hashes << "}";
+  return o;
+}
+
 
 class Unique final : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
+  // 10 Million unique entries
+  Unique() { bloom_init(&bloom_, 10'000'000llu, 0.01); }
   virtual void init(CtxPtr ctx) override {
-    bloom_init(&bloom_, 1000000, 0.01);
-    bloom_print(&bloom_);
-    LOG(INFO) << "Initializing unique";
+    ctx->setTimer("print_loop", bolt::timeNowMilli());
+    LOG(INFO) << "Initializing unique with bloom_: " << bloom_;
   }
 
   virtual void destroy() override {
-    bloom_print(&bloom_);
+    LOG(INFO) << "Destructing unique with bloom_: " << bloom_;
     bloom_free(&bloom_);
-    LOG(INFO) << "Destructing word count sink [cpp]";
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
+    bloom_add(&bloom_, (void *)r.value.c_str(), r.value.length());
   }
 
   virtual void
-  processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {}
+  processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
+    ctx->setTimer(key, bolt::timeNowMilli() + 10000);
+    LOG(INFO) << "bloom_: " << bloom_;
+  }
 
   virtual bolt::Metadata metadata() override {
     bolt::Metadata m;
