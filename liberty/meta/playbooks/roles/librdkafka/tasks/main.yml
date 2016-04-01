@@ -16,9 +16,14 @@
     --CXXFLAGS="-O2 -DNDEBUG -fPIC" --prefix="{{third_party_dir}}"
   args:
     chdir: '{{goobly_cache_dir}}/librdkafka'
-    creates: '{{goobly_cache_dir}}/librdkafka/Make.config'
+    creates: '{{goobly_cache_dir}}/librdkafka/Makefile.config'
 
-- command: make -j{{ansible_processor_vcpus}} install
+- command: make -j{{ansible_processor_vcpus}}
+  args:
+    chdir: '{{goobly_cache_dir}}/librdkafka'
+    creates: '{{goobly_cache_dir}}/librdkafka/src/librdkafka.a'
+
+- command: make install
   args:
     chdir: '{{goobly_cache_dir}}/librdkafka'
     creates: '{{third_party_dir}}/lib/librdkafka.a'

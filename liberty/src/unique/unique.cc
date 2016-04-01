@@ -38,7 +38,8 @@ class Unique final : public bolt::Computation {
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
-    static RE2 regex("-\\s(\\d+)\\s\\d+\\.\\d+\\.\\d+\\s\\w+\\s\\w+\\s\\d+\\s\\d+:\\d+:\\d+\\s\\w+@\\w+(.*)$");
+    static RE2 regex("-\\s(\\d+)\\s\\d+\\.\\d+\\.\\d+\\s\\w+\\s\\w+\\s\\d+"
+                     "\\s\\d+:\\d+:\\d+\\s\\w+@\\w+(.*)$");
     ++recordCount_;
     long date = 0;
     std::string log = "";
@@ -49,9 +50,11 @@ class Unique final : public bolt::Computation {
         bloom_add(&bloom_, (void *)log.c_str(), log.length());
         ++uniqueRecords_;
         // produce to kafka
+        produceToKafka(date % 144, std::to_string(date), log);
       }
     }
   }
+
 
   virtual void
   processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
@@ -67,8 +70,16 @@ class Unique final : public bolt::Computation {
     return m;
   }
 
-
   private:
+  void produceToKafka(uint64_t partition,
+                      const std::string &key,
+                      const std::string &value) {
+    // clunky ass librdkafka iface
+  producer->produce(topic, partition, RdKafka::Producer::RK_MSG_COPY,
+                    const_cast<char *>(line.str().c_str()) line.size(), &key,
+                    NULL);
+  }
+
   struct bloom bloom_;
   uint64_t recordCount_{0};
   uint64_t uniqueRecords_{0};

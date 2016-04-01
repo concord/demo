@@ -3,9 +3,9 @@ project (concord)
 set(VERSION 0.1.0)
 
 link_directories (
+  ${PROJECT_SOURCE_DIR}/third_party/lib
   /usr/local/lib
   /usr/lib/x86_64-linux-gnu
-  ${PROJECT_SOURCE_DIR}/third_party/lib
   )
 
 include_directories (
