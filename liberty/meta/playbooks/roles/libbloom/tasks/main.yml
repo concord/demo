@@ -1,16 +1,15 @@
 ---
 
-- name: Sync soure from git
+- name: Sync soure from git (our clone for c++ symbols)
   git:
-    repo='https://github.com/jvirkki/libbloom.git'
+    repo='https://github.com/senior7515/libbloom.git'
     accept_hostkey=yes
     clone=yes
     dest='{{goobly_cache_dir}}/libbloom'
     update=yes
     recursive=yes
-    version='3b9a2b7'
+    version='520438e'
     force=yes
-    # git tag - v1.1
 
 - command: make -j{{ansible_processor_vcpus}}
   args:

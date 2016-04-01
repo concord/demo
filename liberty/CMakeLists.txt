@@ -33,7 +33,6 @@ set (BASE_CPP_CLIENT_LIBRARIES
   :libunwind.so.8
   :libpthread.so.0
   :libz.so.1.2.8
-
   )
 
 set(BASE_FLAGS
@@ -71,10 +70,8 @@ function (join VALUES SEP OUTPUT)
   set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 endfunction ()
 
-set (LOG_COUNTER_SOURCES
-  ${PROJECT_SOURCE_DIR}/src/log_parser.cc
-  ${PROJECT_SOURCE_DIR}/src/log_counter.cc
-  )
+
+
 
 set (CMAKE_CXX_COMPILER g++-4.9)
 set (CMAKE_C_COMPILER gcc-4.9)
@@ -86,9 +83,22 @@ join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
 
 add_executable (
   log_counter
-  ${LOG_COUNTER_SOURCES})
+  ${PROJECT_SOURCE_DIR}/src/log_parser.cc
+  ${PROJECT_SOURCE_DIR}/src/log_counter.cc
+  )
 target_link_libraries (
   log_counter
   ${BASE_CPP_CLIENT_LIBRARIES}
   libre2.a
+  )
+
+
+add_executable (
+  unique
+  ${PROJECT_SOURCE_DIR}/src/unique/unique.cc
+  )
+target_link_libraries (
+  unique
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  bloom
   )
