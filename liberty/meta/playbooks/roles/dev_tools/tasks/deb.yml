@@ -1,4 +1,0 @@
----
-
-- name: create temp directory in '{{bolt_cache_dir}}/.tmp'
-  file: dest='{{bolt_cache_dir}}/.tmp' state=directory
