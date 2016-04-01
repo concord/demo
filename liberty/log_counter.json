@@ -2,13 +2,10 @@
   "cpus": 1,
   "zookeeper_hosts":"127.0.0.1:2181",
   "zookeeper_path":"/concord",
-  "executable_name": "./build/log_counter",
-  "compress_files": ["./build/log_counter"],
+  "executable_name": "./build/a.out",
+  "compress_files": ["./build/a.out"],
   "computation_name": "log-counter",
-  "environment_variables": [
-    "GLOG_logtostderr=1"
-  ],
   "executable_arguments": [
-    "--kafka_topic liberty-final"
+    "--kafka_topic liberty_test"
   ]
 }

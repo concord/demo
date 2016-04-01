@@ -1,0 +1,25 @@
+---
+
+- name: Sync soure from git (our clone for c++ symbols)
+  git:
+    repo='https://github.com/senior7515/libbloom.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/libbloom'
+    update=yes
+    recursive=yes
+    version='520438e'
+    force=yes
+
+- command: make -j{{ansible_processor_vcpus}}
+  args:
+    chdir: '{{goobly_cache_dir}}/libbloom'
+    creates: '{{goobly_cache_dir}}/libbloom/build/libbloom.so'
+
+- copy:
+    src="{{goobly_cache_dir}}/libbloom/bloom.h"
+    dest="{{third_party_dir}}/include/bloom.h"
+
+- copy:
+    src='{{goobly_cache_dir}}/libbloom/build/libbloom.so'
+    dest="{{third_party_dir}}/lib/libbloom.so"

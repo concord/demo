@@ -1,0 +1,12 @@
+{
+  "cpus": 1,
+  "zookeeper_hosts":"127.0.0.1:2181",
+  "zookeeper_path":"/concord",
+  "executable_name": "./build/unique",
+  "compress_files": ["./build/unique"],
+  "computation_name": "unique",
+  "environment_variables": [
+    "GLOG_v=1",
+    "GLOG_logtostderr=1"
+  ]
+}
