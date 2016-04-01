@@ -13,7 +13,7 @@ include_directories (
   ${PROJECT_SOURCE_DIR}/third_party/include
   )
 
-set (CPP_CLIENT_LIBRARIES
+set (BASE_CPP_CLIENT_LIBRARIES
   :libbolt_cpp_client.so
   :libglog.so.0
   :libthriftnb-0.9.2.so
@@ -33,7 +33,7 @@ set (CPP_CLIENT_LIBRARIES
   :libunwind.so.8
   :libpthread.so.0
   :libz.so.1.2.8
-  libre2.a
+
   )
 
 set(BASE_FLAGS
@@ -71,7 +71,7 @@ function (join VALUES SEP OUTPUT)
   set (${OUTPUT} "${_TMP_STR}" PARENT_SCOPE)
 endfunction ()
 
-set (SOURCES
+set (LOG_COUNTER_SOURCES
   ${PROJECT_SOURCE_DIR}/src/log_parser.cc
   ${PROJECT_SOURCE_DIR}/src/log_counter.cc
   )
@@ -81,5 +81,14 @@ set (CMAKE_C_COMPILER gcc-4.9)
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -v" )
 join ("${CXX_FLAG_LIST}" " " CMAKE_CXX_FLAGS)
 join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
-add_executable (a.out ${SOURCES})
-target_link_libraries (a.out ${CPP_CLIENT_LIBRARIES})
+
+
+
+add_executable (
+  log_counter
+  ${LOG_COUNTER_SOURCES})
+target_link_libraries (
+  log_counter
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  libre2.a
+  )

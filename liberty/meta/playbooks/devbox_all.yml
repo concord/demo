@@ -8,3 +8,4 @@
     - wangle # depends on folly being first
     - libbloom
     - re2
+    - hyperloglog
