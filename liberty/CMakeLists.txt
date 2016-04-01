@@ -102,4 +102,5 @@ target_link_libraries (
   ${BASE_CPP_CLIENT_LIBRARIES}
   bloom
   re2
+  rdkafka
   )
