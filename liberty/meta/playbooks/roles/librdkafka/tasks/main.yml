@@ -1,0 +1,24 @@
+---
+
+- name: Sync soure from git
+  git:
+    repo='https://github.com/edenhill/librdkafka.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/librdkafka'
+    update=yes
+    recursive=yes
+    version='0.9.0'
+    force=yes
+
+- shell:
+    ./configure --CFLAGS="-O2 -DNDEBUG -fPIC" \
+    --CXXFLAGS="-O2 -DNDEBUG -fPIC" --prefix="{{third_party_dir}}"
+  args:
+    chdir: '{{goobly_cache_dir}}/librdkafka'
+    creates: '{{goobly_cache_dir}}/librdkafka/Make.config'
+
+- command: make -j{{ansible_processor_vcpus}} install
+  args:
+    chdir: '{{goobly_cache_dir}}/librdkafka'
+    creates: '{{third_party_dir}}/lib/librdkafka.a'

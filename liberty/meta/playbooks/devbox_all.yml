@@ -9,3 +9,4 @@
     - libbloom
     - re2
     - hyperloglog
+    - librdkafka
