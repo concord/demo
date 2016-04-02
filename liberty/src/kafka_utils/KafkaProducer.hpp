@@ -54,6 +54,14 @@ class KafkaProducer {
     }
   }
 
+  ~KafkaProducer() {
+    int outq = 0;
+    while((outq = producer_->outq_len()) > 0) {
+      LOG(WARNING) << "Waiting to drain queue of size: " << outq;
+      producer_->poll(5000);
+    }
+  }
+
   void produce(const std::string &topic,
                const std::string &key,
                const std::string &value,
