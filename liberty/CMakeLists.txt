@@ -106,7 +106,6 @@ target_link_libraries (
   re2.a
   rdkafka.a
   rdkafka++.a
-  cityhash.a
   )
 
 add_executable (
@@ -119,5 +118,4 @@ target_link_libraries (
   sasl2
   :librdkafka.a
   :librdkafka++.a
-  cityhash.a
   )

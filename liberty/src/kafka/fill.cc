@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
-#include <city.h>
 #include <librdkafka/rdkafkacpp.h>
 #include <thread>
 
@@ -16,15 +15,13 @@ static uint64_t bytesSent = 0;
 DEFINE_string(file_name, "", "Name of file to produce");
 DEFINE_string(topic_name, "", "Name of topic to produce onto");
 DEFINE_string(broker_addr, "", "Address of kafka broker");
-DEFINE_int64(partitions, 144, "Number of broker partitions");
 DEFINE_int32(limit_gb, 1, "Estimated amount of data to send");
 
 void produce_line(std::string &line,
                   RdKafka::Producer *producer,
                   RdKafka::Topic *topic) {
   std::string key = line.size() < 24 ? line : line.substr(0, 24);
-  uint64_t partition = CityHash64(key.data(), key.size())
-                       % static_cast<uint64_t>(FLAGS_partitions);
+
   // 1. topic
   // 2. partition
   // 3. flags
@@ -33,10 +30,10 @@ void produce_line(std::string &line,
   // 6. std::string key
   // 7. msg_opaque?
   RdKafka::ErrorCode resp;
-  while(
-    (resp = producer->produce(topic, partition, RdKafka::Producer::RK_MSG_COPY,
-                              const_cast<char *>(line.c_str()), line.size(),
-                              &key, NULL)) && resp != RdKafka::ERR_NO_ERROR) {
+  while((resp = producer->produce(
+           topic, RdKafka::Topic::PARTITION_UA, RdKafka::Producer::RK_MSG_COPY,
+           const_cast<char *>(line.c_str()), line.size(), &key, NULL))
+        && resp != RdKafka::ERR_NO_ERROR) {
     LOG(ERROR) << "Issue when producing: " << RdKafka::err2str(resp)
                << " .. attempting again";
   }

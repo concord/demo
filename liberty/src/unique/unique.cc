@@ -62,7 +62,7 @@ class Unique final : public bolt::Computation {
       if(bloom_check(&bloom_, (void *)log.c_str(), log.length()) == 0) {
         bloom_add(&bloom_, (void *)log.c_str(), log.length());
         ++uniqueRecords_;
-        produceToKafka(date % 144, std::to_string(date), r.value);
+        produceToKafka(std::to_string(date), r.value);
       }
     }
   }
@@ -83,11 +83,8 @@ class Unique final : public bolt::Computation {
   }
 
   private:
-  void produceToKafka(uint64_t partition,
-                      const std::string &key,
-                      const std::string &value) {
-    kafkaProducer_->produce(FLAGS_kafka_unique_topic_out, key, value,
-                            partition);
+  void produceToKafka(const std::string &key, const std::string &value) {
+    kafkaProducer_->produce(FLAGS_kafka_unique_topic_out, key, value);
   }
   struct bloom bloom_;
   uint64_t recordCount_{0};

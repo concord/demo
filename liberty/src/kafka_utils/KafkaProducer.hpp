@@ -1,5 +1,4 @@
 #pragma once
-#include <city.h>
 #include <librdkafka/rdkafkacpp.h>
 #include <folly/String.h>
 #include <glog/logging.h>
@@ -13,8 +12,7 @@ class KafkaProducer {
     Topic(RdKafka::Producer *producer, std::string topicName)
       : producer(CHECK_NOTNULL(producer)), topicName(topicName) {
       std::map<std::string, std::string> opts{
-        {"queue.buffering.max.messages", "10000000"},
-        {"num.partitions", "144"}};
+        {"queue.buffering.max.messages", "10000000"}};
 
       topicConfig.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
       LOG_IF(FATAL, !topicConfig)
@@ -48,7 +46,9 @@ class KafkaProducer {
 
     opts.insert({"metadata.broker.list", folly::join(", ", brokers)});
     opts.insert({"queue.buffering.max.messages", "10000000"});
-    opts.insert({"num.partitions", "144"});
+    // set the automatic topic creation and make sure you set these partitions
+    // on the kafka broker itself. On the server.properties.
+    // num.partitions=144;
     std::string err;
     for(const auto &t : opts) {
       LOG_IF(FATAL, clusterConfig_->set(t.first, t.second, err)
@@ -66,15 +66,9 @@ class KafkaProducer {
   void produce(const std::string &topic,
                const std::string &key,
                const std::string &value,
-               int64_t partition = -1) {
+               int64_t partition = RdKafka::Topic::PARTITION_UA) {
     assert(topicConfigs_.find(topic) != topicConfigs_.end());
-
-    if(partition < 0) {
-      auto tmp = CityHash64(key.c_str(), key.length());
-      partition = reinterpret_cast<int64_t &>(tmp) % 144;
-    }
     auto &t = topicConfigs_[topic]; // reference to the unique ptr
-
     auto maxTries = 10;
     RdKafka::ErrorCode resp;
     while(maxTries-- > 0
@@ -82,6 +76,7 @@ class KafkaProducer {
                 t->topic.get(), partition, RdKafka::Producer::RK_MSG_COPY,
                 (char *)value.c_str(), value.length(), &key, NULL))
           && resp != RdKafka::ERR_NO_ERROR) {
+      t->producer->poll(1);
       LOG(ERROR) << "Issue when producing: " << RdKafka::err2str(resp);
     }
     bytesSent_ += value.length() + key.length();
