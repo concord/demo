@@ -51,7 +51,7 @@ class KafkaProducer {
     // num.partitions=144;
     std::string err;
     for(const auto &t : opts) {
-      LOG_IF(FATAL, clusterConfig_->set(t.first, t.second, err)
+      LOG_IF(ERROR, clusterConfig_->set(t.first, t.second, err)
                       != RdKafka::Conf::CONF_OK)
         << "Could not set variable: " << t.first << " -> " << t.second << err;
     }
