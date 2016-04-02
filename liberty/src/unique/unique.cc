@@ -62,7 +62,7 @@ class Unique final : public bolt::Computation {
       if(bloom_check(&bloom_, (void *)log.c_str(), log.length()) == 0) {
         bloom_add(&bloom_, (void *)log.c_str(), log.length());
         ++uniqueRecords_;
-        produceToKafka(date % 144, std::to_string(date), log);
+        produceToKafka(date % 144, std::to_string(date), r.value);
       }
     }
   }
