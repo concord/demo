@@ -55,8 +55,9 @@ class KafkaProducer {
   }
 
   ~KafkaProducer() {
+    auto maxTries = 10;
     int outq = 0;
-    while((outq = producer_->outq_len()) > 0) {
+    while(maxTries-- > 0 && (outq = producer_->outq_len()) > 0) {
       LOG(WARNING) << "Waiting to drain queue of size: " << outq;
       producer_->poll(5000);
     }
