@@ -78,7 +78,7 @@ class Unique final : public bolt::Computation {
   virtual bolt::Metadata metadata() override {
     bolt::Metadata m;
     m.name = "unique";
-    m.istreams.insert({"words", bolt::Grouping::GROUP_BY});
+    m.istreams.insert({"liberty", bolt::Grouping::GROUP_BY});
     return m;
   }
 
