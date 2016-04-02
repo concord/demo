@@ -34,3 +34,4 @@
     - 'libgoogle-perftools-dev' # profiling tools
     - 'doxygen' # needed for docs
     - 'libprocps3-dev' # Used to inspect /proc
+    - 'libsasl2-dev' # Used for librdkafka
