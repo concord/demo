@@ -34,7 +34,7 @@ class Unique final : public bolt::Computation {
   using CtxPtr = bolt::Computation::CtxPtr;
   // 10 Million unique entries
   Unique() {
-    bloom_init(&bloom_, 10'000'000llu, 0.01);
+    bloom_init(&bloom_, 265'569'231llu, 0.08);
     std::vector<std::string> brokers;
     folly::split(",", FLAGS_kafka_brokers, brokers);
     std::vector<std::string> topics = {FLAGS_kafka_unique_topic_out};
