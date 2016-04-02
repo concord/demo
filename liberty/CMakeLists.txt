@@ -11,6 +11,7 @@ link_directories (
 include_directories (
   SYSTEM
   ${PROJECT_SOURCE_DIR}/third_party/include
+  src
   )
 
 set (BASE_CPP_CLIENT_LIBRARIES
@@ -100,9 +101,12 @@ add_executable (
 target_link_libraries (
   unique
   ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
   bloom
-  re2
-  rdkafka
+  re2.a
+  rdkafka.a
+  rdkafka++.a
+  cityhash.a
   )
 
 add_executable (
@@ -117,4 +121,3 @@ target_link_libraries (
   :librdkafka++.a
   cityhash.a
   )
-
