@@ -11,18 +11,9 @@ class KafkaProducer {
     public:
     Topic(RdKafka::Producer *producer, std::string topicName)
       : producer(CHECK_NOTNULL(producer)), topicName(topicName) {
-      std::map<std::string, std::string> opts{
-        {"queue.buffering.max.messages", "10000000"}};
-
       topicConfig.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
       LOG_IF(FATAL, !topicConfig)
         << "Could not create kafka topic configuration";
-      for(const auto &t : opts) {
-        std::string err;
-        LOG_IF(FATAL, topicConfig->set(t.first, t.second, err)
-                        != RdKafka::Conf::CONF_OK)
-          << "Could not set variable: " << t.first << " -> " << t.second << err;
-      }
       // clunky librdkafka api
       std::string err;
       topic.reset(
