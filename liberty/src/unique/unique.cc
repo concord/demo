@@ -48,6 +48,7 @@ class Unique final : public bolt::Computation {
   virtual void destroy() override {
     LOG(INFO) << "Destructing unique with bloom_: " << bloom_;
     bloom_free(&bloom_);
+    kafkaProducer_ = nullptr; // drain the queue!
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
