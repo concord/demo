@@ -41,11 +41,11 @@ class LogCounter final : public bolt::Computation {
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
-    static RE2 regex("-\\s\\d+\\s(\\d+)\\.\\d+\\.(\\d+)\\s\\w+\\s\\w+\\s\\d+"
-                     "\\s\\d+:\\d+:\\d+\\s\\w+\\/\\w+\\s(.*)");
+    static RE2 simpleDateRegex("-\\s\\d+\\s(\\d+)\\.\\d+\\.(\\d+)\\s\\w+\\s\\w+"
+                               "\\s\\d+\\s\\d+:\\d+:\\d+\\s\\S+\\s(.*)$");
     int year, month;
     std::string log;
-    if(RE2::FullMatch(r.key, regex, &year, &month, &log)) {
+    if(RE2::FullMatch(r.key, simpleDateRegex, &year, &month, &log)) {
       if(data_.find(month) == data_.end()) {
         data_[month].emplace(year, kHllRegisterSize);
       } else {
