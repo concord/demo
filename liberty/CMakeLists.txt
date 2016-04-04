@@ -74,8 +74,8 @@ endfunction ()
 
 
 
-set (CMAKE_CXX_COMPILER g++-4.9)
-set (CMAKE_C_COMPILER gcc-4.9)
+set (CMAKE_CXX_COMPILER g++-5)
+set (CMAKE_C_COMPILER gcc-5)
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -v" )
 join ("${CXX_FLAG_LIST}" " " CMAKE_CXX_FLAGS)
 join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
