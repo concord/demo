@@ -49,6 +49,10 @@ class KafkaProducer : public RdKafka::EventCb,
       }
     }
 
+    LOG_IF(INFO, opts.find("compression.codec") == opts.end())
+      << "No kafka codec selected. Consider using compression.codec:snappy "
+         "when producing and consuming";
+
     std::string err;
     LOG_IF(FATAL,
            clusterConfig_->set("dr_cb", (RdKafka::DeliveryReportCb *)this, err)
