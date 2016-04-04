@@ -74,8 +74,15 @@ class KafkaProducer : public RdKafka::EventCb,
 
   // RdKafka::DeliveryReportCb methods
   void dr_cb(RdKafka::Message &message) override {
-    bytesKafkaReceived_ += message.len();
-    ++msgsKafkaReceived_;
+    if(message.err()) {
+      LOG(ERROR) << "Kafka producer error: " << message.errstr()
+                 << ", topic: " << message.topic_name();
+      bytesKafkaSendError_ += message.len();
+      ++msgsKafkaSendError_;
+    } else {
+      bytesKafkaReceived_ += message.len();
+      ++msgsKafkaReceived_;
+    }
   }
 
   // RdKafka::EventCb methods
@@ -135,13 +142,17 @@ class KafkaProducer : public RdKafka::EventCb,
       LOG(INFO) << "Total msgs sent: " << msgsSent_
                 << ", total bytes sent: " << bytesSent_
                 << ", bytes received by the broker: " << bytesKafkaReceived_
-                << ", msgs received by broker: " << msgsKafkaReceived_;
+                << ", msgs received by broker: " << msgsKafkaReceived_
+                << ", error bytes attempted to send: " << bytesKafkaSendError_
+                << ", error msgs sent to broker: " << msgsKafkaSendError_;
     }
   }
 
   private:
   uint64_t bytesSent_{0};
   uint64_t msgsSent_{0};
+  uint64_t bytesKafkaSendError_{0};
+  uint64_t msgsKafkaSendError_{0};
   uint64_t bytesKafkaReceived_{0};
   uint64_t msgsKafkaReceived_{0};
   std::unique_ptr<RdKafka::Producer> producer_{nullptr};
