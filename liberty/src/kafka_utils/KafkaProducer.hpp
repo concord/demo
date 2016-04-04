@@ -38,7 +38,7 @@ class KafkaProducer : public RdKafka::EventCb,
     std::map<std::string, std::string> defaultOpts{
       {"metadata.broker.list", folly::join(", ", brokers)},
       {"queue.buffering.max.messages", "10000000"},
-      {"statistics.interval.ms", "1000"}};
+      {"statistics.interval.ms", "60000"}}; // every minute
 
     for(auto &t : opts) {
       if(defaultOpts.find(t.first) == defaultOpts.end()) {
