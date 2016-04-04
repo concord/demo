@@ -130,8 +130,8 @@ class KafkaProducer : public RdKafka::EventCb,
     }
     bytesSent_ += value.length() + key.length();
     ++msgsSent_;
-    if(msgsSent_ % 1'000'000llu == 0) {
-      t->producer->poll(5);
+    if(msgsSent_ % 100000 == 0) {
+      t->producer->poll(1);
       LOG(INFO) << "Total msgs sent: " << msgsSent_
                 << ", total bytes sent: " << bytesSent_
                 << ", bytes received by the broker: " << bytesKafkaReceived_
