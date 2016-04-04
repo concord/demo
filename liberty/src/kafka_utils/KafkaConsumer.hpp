@@ -29,14 +29,18 @@ class KafkaConsumer : public RdKafka::EventCb,
 
   struct KafkaConsumerTopicMetrics {
     int64_t currentOffset{0};
-    uint64_t bytesSent{0};
-    uint64_t msgsSent{0};
+    uint64_t bytesReceived{0};
+    uint64_t msgsReceived{0};
     std::ostream &operator<<(std::ostream &o, Topic &rhs) {
       o << "Topic: " << topicName << ", offset: " << currentOffset
         << ", bytesSent: " << bytesSent << ", msgsSent: " << msgsSent;
       return o;
     }
-    void updateMetrics(RdKafka::Message *msg) {}
+    void updateMetrics(const RdKafka::Message *msg) {
+      currentOffset = msg->offset();
+      bytesReceived += msg->len();
+      ++msgsReceived;
+    }
   };
 
   KakfaConsumer(std::vector<std::string> &brokers,
@@ -166,7 +170,6 @@ class KafkaConsumer : public RdKafka::EventCb,
                       << ", to: " << m.startOffset << ", from: " << p->offset()
                       << ", on partition: " << p->partition();
             p->set_offset(m.startOffset);
-            topicConfigs_[p->topic()][p->partition()]();
           }
         }
       }
@@ -212,7 +215,7 @@ class KafkaConsumer : public RdKafka::EventCb,
 
   private:
   void updateMetrics(RdKafka::Message *msg) {
-
+    topicMetrics_[msg->topic_name()][msg->partition()].updateMetrics(msg);
   }
 
   std::unique_ptr<RdKafka::Conf> clusterConfig_{nullptr};
@@ -220,8 +223,8 @@ class KafkaConsumer : public RdKafka::EventCb,
   std::unique_ptr<RdKafka::KafkaConsumer> consumer_{nullptr};
   std::vector<KafkaConsumerTopicMetadata> topicMetadata_{};
   std::unordered_map<std::string,
-                     std::unordered_map<int64_t, KafkaConsumerTopicMetrics>>
-    topicConfigs_{};
+                     std::unordered_map<int32_t, KafkaConsumerTopicMetrics>>
+    topicMetrics_{};
   Random rand_;
 };
 }
