@@ -9,9 +9,9 @@ namespace concord {
 class KafkaProducer : public RdKafka::EventCb,
                       public RdKafka::DeliveryReportCb {
   public:
-  class Topic {
+  class KafkaProducerTopic {
     public:
-    Topic(RdKafka::Producer *producer, std::string topicName)
+    KafkaProducerTopic(RdKafka::Producer *producer, std::string topicName)
       : producer(CHECK_NOTNULL(producer)), topicName(topicName) {
       topicConfig.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
       LOG_IF(FATAL, !topicConfig)
@@ -73,7 +73,7 @@ class KafkaProducer : public RdKafka::EventCb,
     producer_.reset(RdKafka::Producer::create(clusterConfig_.get(), err));
     LOG_IF(FATAL, !producer_) << "Could not create producer: " << err;
     for(auto &t : topics) {
-      auto ptr = std::make_unique<Topic>(producer_.get(), t);
+      auto ptr = std::make_unique<KafkaProducerTopic>(producer_.get(), t);
       topicConfigs_.emplace(t, std::move(ptr));
     }
     LOG(INFO) << "Configuration: " << folly::join(" ", *clusterConfig_->dump());
@@ -168,7 +168,8 @@ class KafkaProducer : public RdKafka::EventCb,
   uint64_t msgsKafkaReceived_{0};
   std::unique_ptr<RdKafka::Producer> producer_{nullptr};
   std::unique_ptr<RdKafka::Conf> clusterConfig_{nullptr};
-  std::unordered_map<std::string, std::unique_ptr<Topic>> topicConfigs_{};
+  std::unordered_map<std::string, std::unique_ptr<KafkaProducerTopic>>
+    topicConfigs_{};
   Random rand_;
 };
 }
