@@ -3,14 +3,15 @@ project (concord)
 set(VERSION 0.1.0)
 
 link_directories (
+  ${PROJECT_SOURCE_DIR}/third_party/lib
   /usr/local/lib
   /usr/lib/x86_64-linux-gnu
-  ${PROJECT_SOURCE_DIR}/third_party/lib
   )
 
 include_directories (
   SYSTEM
   ${PROJECT_SOURCE_DIR}/third_party/include
+  src
   )
 
 set (BASE_CPP_CLIENT_LIBRARIES
@@ -100,9 +101,11 @@ add_executable (
 target_link_libraries (
   unique
   ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
   bloom
-  re2
-  rdkafka
+  re2.a
+  rdkafka.a
+  rdkafka++.a
   )
 
 add_executable (
@@ -115,6 +118,4 @@ target_link_libraries (
   sasl2
   :librdkafka.a
   :librdkafka++.a
-  cityhash.a
   )
-
