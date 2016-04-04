@@ -2,6 +2,7 @@
 #include <librdkafka/rdkafkacpp.h>
 #include <folly/String.h>
 #include <glog/logging.h>
+#include "utils/Random.hpp"
 
 namespace concord {
 
@@ -35,9 +36,11 @@ class KafkaProducer : public RdKafka::EventCb,
                 const std::map<std::string, std::string> &opts = {})
     : clusterConfig_(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)) {
 
+
     std::map<std::string, std::string> defaultOpts{
       {"metadata.broker.list", folly::join(", ", brokers)},
       {"queue.buffering.max.messages", "10000000"},
+      {"client.id", "concord_client_id_" + std::to_string(rand_.nextRand())},
       {"statistics.interval.ms", "60000"}}; // every minute
 
     for(auto &t : opts) {
@@ -96,7 +99,6 @@ class KafkaProducer : public RdKafka::EventCb,
                    << event.str();
       }
       break;
-
     case RdKafka::Event::EVENT_STATS:
       LOG(INFO) << "Librdkafka stats: " << event.str();
       break;
@@ -104,13 +106,11 @@ class KafkaProducer : public RdKafka::EventCb,
       LOG(INFO) << "Librdkafka log: severity: " << event.severity()
                 << ", fac: " << event.fac() << ", event: " << event.str();
       break;
-
     case RdKafka::Event::EVENT_THROTTLE:
       std::cerr << "THROTTLED: " << event.throttle_time() << "ms by "
                 << event.broker_name() << " id " << event.broker_id()
                 << std::endl;
       break;
-
     default:
       LOG(ERROR) << "Librdkafka unknown event: type: " << event.type()
                  << ", str: " << RdKafka::err2str(event.err());
@@ -127,13 +127,21 @@ class KafkaProducer : public RdKafka::EventCb,
     auto &t = topicConfigs_[topic]; // reference to the unique ptr
     auto maxTries = 10;
     RdKafka::ErrorCode resp;
-    while(maxTries-- > 0
-          && (resp = t->producer->produce(
-                t->topic.get(), partition, RdKafka::Producer::RK_MSG_COPY,
-                (char *)value.c_str(), value.length(), &key, NULL))
-          && resp != RdKafka::ERR_NO_ERROR) {
-      t->producer->poll(1);
-      LOG(ERROR) << "Issue when producing: " << RdKafka::err2str(resp);
+    while(maxTries-- > 0) {
+      resp = t->producer->produce(
+        t->topic.get(), partition, RdKafka::Producer::RK_MSG_COPY,
+        (char *)value.c_str(), value.length(), &key, NULL);
+
+      if(resp == RdKafka::ERR__QUEUE_FULL) {
+        t->producer->poll(1);
+        LOG(ERROR) << "Issue when producing: " << RdKafka::err2str(resp);
+      } else if(resp == RdKafka::ERR_NO_ERROR) {
+        maxTries = 0;
+      }
+    }
+    if(resp != RdKafka::ERR_NO_ERROR) {
+      LOG(ERROR) << "After 10 tries, skipping message due to: "
+                 << RdKafka::err2str(resp);
     }
     bytesSent_ += value.length() + key.length();
     ++msgsSent_;
@@ -158,5 +166,6 @@ class KafkaProducer : public RdKafka::EventCb,
   std::unique_ptr<RdKafka::Producer> producer_{nullptr};
   std::unique_ptr<RdKafka::Conf> clusterConfig_{nullptr};
   std::unordered_map<std::string, std::unique_ptr<Topic>> topicConfigs_{};
+  Random rand_;
 };
 }
