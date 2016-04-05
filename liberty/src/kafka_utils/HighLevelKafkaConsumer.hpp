@@ -1,9 +1,16 @@
 #pragma once
+#include <gflags/gflags.h>
 #include <map>
 #include <librdkafka/rdkafkacpp.h>
 #include <folly/String.h>
 #include <glog/logging.h>
 #include "utils/Random.hpp"
+
+
+DEFINE_bool(enable_kafka_consumer_debug,
+            false,
+            "enable debugging hooks _VERY VERBOSE_");
+
 
 namespace concord {
 
@@ -84,10 +91,15 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
       {"metadata.broker.list", folly::join(", ", brokers)},
       {"group.id", "concord_group_id_" + folly::join(".", topicNames)},
       {"client.id", "concord_client_id_" + std::to_string(rand_.nextRand())},
-      {"statistics.interval.ms", "60000"}, // every minute
-      {"queued.min.messages", "10240"}};   // needed for queues of msgs
-
-
+      {"receive.message.max.bytes", "100000000"}, // Max receive buff or 100MB
+      {"fetch.message.max.bytes", "20000"},       // Some smmalller default
+      {"statistics.interval.ms", "60000"},        // every minute
+    };
+    if(FLAGS_enable_kafka_consumer_debug) {
+      defaultOpts.insert({"debug",
+                          "all,generic,broker,topic,metadata,producer,"
+                          "queue,msg,protocol,cgrp,security,fetch"});
+    }
     for(auto &t : opts) {
       if(defaultOpts.find(t.first) == defaultOpts.end()) {
         defaultOpts.insert(t);
@@ -139,7 +151,7 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
         LOG(FATAL) << "Consume failed. Unknown parition|topic: " << m->errstr();
         break;
       default:
-        LOG(FATAL) << "Consume failed. Uknown reason: " << m->errstr();
+        LOG(ERROR) << "Consume failed. Uknown reason: " << m->errstr();
         break;
       }
     }
