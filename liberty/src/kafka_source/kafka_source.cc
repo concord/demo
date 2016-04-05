@@ -45,6 +45,14 @@ class KafkaSource final : public bolt::Computation {
   virtual void destroy() override {
     kafkaPoll_ = false;
     kafkaConsumer_ = nullptr;
+    /*
+     * Wait for RdKafka to decommission.
+     * This is not strictly needed (when check outq_len() above), but
+     * allows RdKafka to clean up all its resources before the application
+     * exits so that memory profilers such as valgrind wont complain about
+     * memory leaks.
+     */
+    RdKafka::wait_destroyed(5000);
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {}
@@ -79,13 +87,5 @@ int main(int argc, char *argv[]) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   bolt::logging::glog_init(argv[0]);
   bolt::client::serveComputation(std::make_shared<KafkaSource>(), argc, argv);
-  /*
-   * Wait for RdKafka to decommission.
-   * This is not strictly needed (when check outq_len() above), but
-   * allows RdKafka to clean up all its resources before the application
-   * exits so that memory profilers such as valgrind wont complain about
-   * memory leaks.
-   */
-  RdKafka::wait_destroyed(5000);
   return 0;
 }

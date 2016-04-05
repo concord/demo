@@ -48,6 +48,18 @@ class Unique final : public bolt::Computation {
   virtual void destroy() override {
     LOG(INFO) << "Destructing unique with bloom_: " << bloom_;
     bloom_free(&bloom_);
+    kafkaProducer_ = nullptr;
+    LOG(INFO) << "Destroying kafka";
+    /*
+     * Wait for RdKafka to decommission.
+     * This is not strictly needed (when check outq_len() above), but
+     * allows RdKafka to clean up all its resources before the application
+     * exits so that memory profilers such as valgrind wont complain about
+     * memory leaks.
+     */
+    RdKafka::wait_destroyed(5000);
+    LOG(INFO) << "FINAL records: " << uniqueRecords_
+              << ", total records: " << recordCount_ << ", bloom_: " << bloom_;
   }
 
   virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
@@ -95,13 +107,6 @@ class Unique final : public bolt::Computation {
 int main(int argc, char *argv[]) {
   bolt::logging::glog_init(argv[0]);
   bolt::client::serveComputation(std::make_shared<Unique>(), argc, argv);
-  /*
-   * Wait for RdKafka to decommission.
-   * This is not strictly needed (when check outq_len() above), but
-   * allows RdKafka to clean up all its resources before the application
-   * exits so that memory profilers such as valgrind wont complain about
-   * memory leaks.
-   */
-  RdKafka::wait_destroyed(5000);
+
   return 0;
 }
