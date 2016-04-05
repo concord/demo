@@ -49,15 +49,6 @@ class Unique final : public bolt::Computation {
     LOG(INFO) << "Destructing unique with bloom_: " << bloom_;
     bloom_free(&bloom_);
     kafkaProducer_ = nullptr;
-    LOG(INFO) << "Destroying kafka";
-    /*
-     * Wait for RdKafka to decommission.
-     * This is not strictly needed (when check outq_len() above), but
-     * allows RdKafka to clean up all its resources before the application
-     * exits so that memory profilers such as valgrind wont complain about
-     * memory leaks.
-     */
-    RdKafka::wait_destroyed(5000);
     LOG(INFO) << "FINAL records: " << uniqueRecords_
               << ", total records: " << recordCount_ << ", bloom_: " << bloom_;
   }
