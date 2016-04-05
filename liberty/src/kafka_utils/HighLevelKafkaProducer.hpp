@@ -6,12 +6,13 @@
 
 namespace concord {
 
-class KafkaProducer : public RdKafka::EventCb,
-                      public RdKafka::DeliveryReportCb {
+class HighLevelKafkaProducer : public RdKafka::EventCb,
+                               public RdKafka::DeliveryReportCb {
   public:
-  class KafkaProducerTopic {
+  class HighLevelKafkaProducerTopic {
     public:
-    KafkaProducerTopic(RdKafka::Producer *producer, std::string topicName)
+    HighLevelKafkaProducerTopic(RdKafka::Producer *producer,
+                                std::string topicName)
       : producer(CHECK_NOTNULL(producer)), topicName(topicName) {
       topicConfig.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
       LOG_IF(FATAL, !topicConfig)
@@ -31,9 +32,9 @@ class KafkaProducer : public RdKafka::EventCb,
 
   // The librdkafka producer API is awkward
   // This is a thin wrapper around it, so one can actually use it
-  KafkaProducer(std::vector<std::string> &brokers,
-                std::vector<std::string> &topics,
-                const std::map<std::string, std::string> &opts = {})
+  HighLevelKafkaProducer(const std::vector<std::string> &brokers,
+                         const std::vector<std::string> &topics,
+                         const std::map<std::string, std::string> &opts = {})
     : clusterConfig_(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL)) {
 
 
@@ -49,7 +50,7 @@ class KafkaProducer : public RdKafka::EventCb,
       }
     }
 
-    LOG_IF(INFO, opts.find("compression.codec") == opts.end())
+    LOG_IF(INFO, defaultOpts.find("compression.codec") == opts.end())
       << "No kafka codec selected. Consider using compression.codec:snappy "
          "when producing and consuming";
 
@@ -73,7 +74,8 @@ class KafkaProducer : public RdKafka::EventCb,
     producer_.reset(RdKafka::Producer::create(clusterConfig_.get(), err));
     LOG_IF(FATAL, !producer_) << "Could not create producer: " << err;
     for(auto &t : topics) {
-      auto ptr = std::make_unique<KafkaProducerTopic>(producer_.get(), t);
+      auto ptr =
+        std::make_unique<HighLevelKafkaProducerTopic>(producer_.get(), t);
       topicConfigs_.emplace(t, std::move(ptr));
     }
     LOG(INFO) << "Configuration: " << folly::join(" ", *clusterConfig_->dump());
@@ -168,7 +170,7 @@ class KafkaProducer : public RdKafka::EventCb,
   uint64_t msgsKafkaReceived_{0};
   std::unique_ptr<RdKafka::Producer> producer_{nullptr};
   std::unique_ptr<RdKafka::Conf> clusterConfig_{nullptr};
-  std::unordered_map<std::string, std::unique_ptr<KafkaProducerTopic>>
+  std::unordered_map<std::string, std::unique_ptr<HighLevelKafkaProducerTopic>>
     topicConfigs_{};
   Random rand_;
 };

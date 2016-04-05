@@ -7,7 +7,7 @@
 #include <concord/glog_init.hpp>
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
-#include "kafka_utils/KafkaProducer.hpp"
+#include "kafka_utils/HighLevelKafkaProducer.hpp"
 
 
 DEFINE_string(kafka_brokers, "localhost:9092", "seed kafka brokers");
@@ -38,7 +38,7 @@ class Unique final : public bolt::Computation {
     std::vector<std::string> brokers;
     folly::split(",", FLAGS_kafka_brokers, brokers);
     std::vector<std::string> topics = {FLAGS_kafka_unique_topic_out};
-    kafkaProducer_.reset(new concord::KafkaProducer(brokers, topics));
+    kafkaProducer_.reset(new concord::HighLevelKafkaProducer(brokers, topics));
   }
   virtual void init(CtxPtr ctx) override {
     ctx->setTimer("print_loop", bolt::timeNowMilli());
@@ -89,7 +89,7 @@ class Unique final : public bolt::Computation {
   struct bloom bloom_;
   uint64_t recordCount_{0};
   uint64_t uniqueRecords_{0};
-  std::unique_ptr<concord::KafkaProducer> kafkaProducer_{nullptr};
+  std::unique_ptr<concord::HighLevelKafkaProducer> kafkaProducer_{nullptr};
 };
 
 int main(int argc, char *argv[]) {

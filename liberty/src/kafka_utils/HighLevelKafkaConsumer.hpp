@@ -7,6 +7,7 @@
 
 namespace concord {
 
+// TODO(agalleog) - clean up
 class KafkaConsumerTopicMetadata {
   public:
   KafkaConsumerTopicMetadata(const std::string &topicName,
@@ -44,12 +45,13 @@ class KafkaConsumerTopicMetrics {
 // *      partition.assignment.strategy, etc.
 //
 class HighLevelKafkaConsumer : public RdKafka::EventCb,
-                               public RdKafka::OffsetCommitCb,
-                               public RdKafka::RebalanceCb {
+                      public RdKafka::OffsetCommitCb,
+                      public RdKafka::RebalanceCb {
   public:
+
   HighLevelKafkaConsumer(const std::vector<std::string> &brokers,
-                         const std::vector<KafkaConsumerTopicMetadata> &topics,
-                         const std::map<std::string, std::string> &opts = {}) {
+                const std::vector<KafkaConsumerTopicMetadata> &topics,
+                const std::map<std::string, std::string> &opts = {}) {
     clusterConfig_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
     topicMetadata_ = topics;
     defaultTopicConf_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
