@@ -3,6 +3,7 @@
 - name: Install & build all development dependencies
   hosts: localhost
   roles:
+    - compilation_tooling
     - folly
     - nvml
     - wangle # depends on folly being first
