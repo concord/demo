@@ -137,7 +137,8 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
       resp = t->producer->produce(
         t->topic.get(), partition, RdKafka::Producer::RK_MSG_COPY,
         (char *)value.c_str(), value.length(), &key, NULL);
-      LOG(ERROR) << "Issue when producing: " << RdKafka::err2str(resp);
+      LOG_IF(ERROR, resp != RdKafka::ERR_NO_ERROR)
+        << "Issue when producing: " << RdKafka::err2str(resp);
       if(resp == RdKafka::ERR__QUEUE_FULL) {
         t->producer->poll(1);
       } else if(resp == RdKafka::ERR_NO_ERROR) {
