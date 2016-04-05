@@ -15,14 +15,6 @@ DEFINE_string(kafka_topics, "", "coma delimited list of topics");
 DEFINE_bool(kafka_topics_consume_from_beginning,
             false,
             "should the driver consume from the begining");
-// static bool ValidateNonEmptyString(const char *flagname,
-//                                    const std::string &str) {
-//   return !str.empty();
-// }
-// static const bool topics_dummy =
-//   google::RegisterFlagValidator(&FLAGS_kafka_topics,
-//   &ValidateNonEmptyString);
-
 
 class KafkaSource final : public bolt::Computation {
   public:
@@ -39,14 +31,15 @@ class KafkaSource final : public bolt::Computation {
   }
   virtual void init(CtxPtr ctx) override {
     ctx->setTimer("print_loop", bolt::timeNowMilli());
-    // std::thread([this]() mutable {
-    //   kafkaConsumer_->consume([this](std::unique_ptr<RdKafka::Message> msg) {
-    //     while(!queue_.write(std::move(msg))) {
-    //       // this thread's job is just to read
-    //     }
-    //     return kafkaPoll_;
-    //   });
-    // }).detach();
+    LOG_IF(FATAL, FLAGS_kafka_topics.empty()) << "Empty --kafka-topics flag";
+    std::thread([this]() mutable {
+      kafkaConsumer_->consume([this](std::unique_ptr<RdKafka::Message> msg) {
+        while(!queue_.write(std::move(msg))) {
+          // this thread's job is just to read
+        }
+        return kafkaPoll_;
+      });
+    }).detach();
   }
 
   virtual void destroy() override {
@@ -60,12 +53,12 @@ class KafkaSource final : public bolt::Computation {
   virtual void
   processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
     ctx->setTimer(key, time); // do it now again :)
-    // auto maxRecords = 10240;
-    // std::unique_ptr<RdKafka::Message> msg{nullptr};
-    // while(maxRecords-- > 0 && queue_.read(msg)) {
-    //   ctx->prduceRecord(msg->topic_name(), *msg->key(),
-    //                     std::string((char *)msg->payload(), msg->len()));
-    // }
+    auto maxRecords = 10240;
+    std::unique_ptr<RdKafka::Message> msg{nullptr};
+    while(maxRecords-- > 0 && queue_.read(msg)) {
+      ctx->produceRecord(msg->topic_name(), *msg->key(),
+                         std::string((char *)msg->payload(), msg->len()));
+    }
   }
 
   virtual bolt::Metadata metadata() override {
