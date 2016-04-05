@@ -105,13 +105,7 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
         defaultOpts.insert(t);
       }
     }
-    // compuate max fetch.message.max.bytes
-    auto maxMsgBytes = std::stol(defaultOpts["receive.message.max.bytes"]);
-    // our default # of partitions
-    maxMsgBytes /= 144;
-    maxMsgBytes /= topics.size();
-    maxMsgBytes -= 10000; // Some constant for the overhead
-    defaultOpts["fetch.message.max.bytes"] = std::to_string(maxMsgBytes);
+
 
     LOG_IF(INFO, defaultOpts.find("compression.codec") == defaultOpts.end())
       << "No kafka codec selected. Consider using compression.codec:snappy "
@@ -187,9 +181,23 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
   rebalance_cb(RdKafka::KafkaConsumer *consumer,
                RdKafka::ErrorCode err,
                std::vector<RdKafka::TopicPartition *> &partitions) override {
-
     LOG(INFO) << "RdKafka::RebalanceCb. partitions: " << partitions.size();
-
+    // compuate max fetch.message.max.bytes
+    std::string maxBytesStr = "";
+    if(clusterConfig_->get("receive.message.max.bytes", maxBytesStr)
+         != RdKafka::Conf::CONF_OK
+       || maxBytesStr.empty()) {
+      maxBytesStr = "0";
+    }
+    auto maxMsgBytes = std::stol(maxBytesStr);
+    // our default # of partitions
+    maxMsgBytes /= partitions.size();
+    maxMsgBytes -= 10000; // Some constant for the overhead
+    std::string kafkaErr;
+    LOG_IF(ERROR, clusterConfig_->set("fetch.message.max.bytes",
+                                      std::to_string(maxMsgBytes), kafkaErr)
+                    != RdKafka::Conf::CONF_OK)
+      << kafkaErr;
     const auto assignment =
       (err == RdKafka::ERR__ASSIGN_PARTITIONS ? "Assigned" : "Revoked");
 
