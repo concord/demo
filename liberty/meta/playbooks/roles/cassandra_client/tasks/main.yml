@@ -27,8 +27,4 @@
   command: make -j{{ansible_processor_vcpus}} install
   args:
     chdir: '{{goobly_cache_dir}}/cassandra_cpp/build'
-    creates: '{{third_party_dir}}/
-  
-
-  
-    
+    creates: '{{third_party_dir}}/'
