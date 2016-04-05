@@ -83,6 +83,15 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
     LOG(INFO) << "Configuration: " << folly::join(" ", *clusterConfig_->dump());
   }
 
+
+  ~HighLevelKafkaProducer() {
+    LOG(INFO) << "Bytes Sent: " << bytesSent_ << ", msgsSent: " << msgsSent_
+              << ", kafka send error bytes" << bytesKafkaSendError_
+              << ", kafka send error msgs: " << msgsKafkaSendError_
+              << ", kafka bytes acknowledgements: " << bytesKafkaReceived_
+              << ", msgs kafka acknowlege recevied " << msgsKafkaReceived_;
+  }
+
   // RdKafka::DeliveryReportCb methods
   void dr_cb(RdKafka::Message &message) override {
     if(message.err()) {
@@ -163,6 +172,13 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
                 << ", error msgs sent to broker: " << msgsKafkaSendError_;
     }
   }
+
+  uint64_t bytesSent() const { return bytesSent_; }
+  uint64_t msgsSent() const { return msgsSent_; }
+  uint64_t bytesKafkaSendError() const { return bytesKafkaSendError_; }
+  uint64_t msgsKafkaSendError() const { return msgsKafkaSendError_; }
+  uint64_t bytesKafkaReceived() const { return bytesKafkaReceived_; }
+  uint64_t msgsKafkaReceived() const { return msgsKafkaReceived_; }
 
   private:
   uint64_t bytesSent_{0};
