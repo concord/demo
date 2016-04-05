@@ -131,3 +131,15 @@ target_link_libraries (
   rdkafka.a
   rdkafka++.a
   )
+
+add_executable (
+  kafka_dumper
+  ${PROJECT_SOURCE_DIR}/src/kafka_dumper/kafka_dumper.cc
+  )
+target_link_libraries (
+  kafka_dumper
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
+  rdkafka.a
+  rdkafka++.a
+  )
