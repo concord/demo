@@ -39,9 +39,9 @@ int main(int argc, char *argv[]) {
   }
   kafkaConsumer_.reset(new concord::HighLevelKafkaConsumer(brokers, topics));
   kafkaConsumer_->consume([](std::unique_ptr<RdKafka::Message> msg) {
-    LOG(INFO) << "Got msg. Topic: " << msg->topic_name()
-              << ", partition: " << msg->partition()
-              << ", key: " << *msg->key();
+    LOG_EVERY_N(INFO, 100000) << "Got msg. Topic: " << msg->topic_name()
+                              << ", partition: " << msg->partition()
+                              << ", key: " << *msg->key();
     return true;
   });
   /*
