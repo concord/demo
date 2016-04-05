@@ -194,7 +194,7 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
       // our default # of partitions
       maxMsgBytes /= partitions.size();
       maxMsgBytes -= 10000; // Some constant for the overhead
-      maxMsgBytes = std::max(512, maxMsgBytes); // failsafe
+      maxMsgBytes = std::max(512l, maxMsgBytes); // failsafe
       std::string kafkaErr;
       LOG_IF(ERROR, clusterConfig_->set("fetch.message.max.bytes",
                                         std::to_string(maxMsgBytes), kafkaErr)
