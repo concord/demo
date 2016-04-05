@@ -109,6 +109,19 @@ target_link_libraries (
   )
 
 add_executable (
+  match
+  ${PROJECT_SOURCE_DIR}/src/match/match.cc
+  )
+target_link_libraries (
+  match
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  uv
+  cassandra_static.a
+  re2.a
+  cityhash.a
+  )
+
+add_executable (
   kafka_fill
   ${PROJECT_SOURCE_DIR}/src/kafka/fill.cc
   )
@@ -119,3 +132,4 @@ target_link_libraries (
   :librdkafka.a
   :librdkafka++.a
   )
+
