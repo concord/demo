@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   google::InstallFailureSignalHandler();
 
 
-  LOG(INFO) << "Kafka --borkers: " << FLAGS_kafka_brokers;
+  LOG(INFO) << "Kafka --brokers: " << FLAGS_kafka_brokers;
   LOG(INFO) << "Kafka --topics: " << FLAGS_kafka_topics;
   LOG(INFO) << "Kafka --kafka_topics_consume_from_beginning: "
             << FLAGS_kafka_topics_consume_from_beginning;
