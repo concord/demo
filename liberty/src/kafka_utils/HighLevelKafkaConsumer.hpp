@@ -112,7 +112,7 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
          "when producing and consuming";
 
     for(const auto &t : defaultOpts) {
-      LOG(INFO) << "Kafka " << RdKafka::version_str() << ". " << t.first << ":"
+      LOG(INFO) << "Kafka " << RdKafka::version_str() << " " << t.first << ":"
                 << t.second;
       LOG_IF(ERROR, clusterConfig_->set(t.first, t.second, err)
                       != RdKafka::Conf::CONF_OK)
