@@ -1,0 +1,34 @@
+---
+
+-  git:
+    repo='https://github.com/datastax/cpp-driver.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/cassandra_cpp'
+    update=yes
+    recursive=yes
+    version='2.3.0'
+    force=yes
+
+- name: Make build dir
+  file:
+    state=directory
+    path='{{goobly_cache_dir}}/cassandra_cpp/build'
+
+- name: Create Makefile with cmake
+  command: cmake -DCASS_BUILDSTATIC=1 -DCASS_BUILD_STATIC=0 \
+                 -DCMAKE_INSTALL_PREFIX:PATH="{{third_party_dir}}" \
+                 "{{goobly_cache_dir}}/cassandra_cpp/"
+  args:
+    chdir: '{{goobly_cache_dir}}/cassandra_cpp/build'
+    creates: '{{goobly_cache_dir}}/cassandra_cpp/build/Makefile'
+
+- name: Build && install
+  command: make -j{{ansible_processor_vcpus}} install
+  args:
+    chdir: '{{goobly_cache_dir}}/cassandra_cpp/build'
+    creates: '{{third_party_dir}}/
+  
+
+  
+    

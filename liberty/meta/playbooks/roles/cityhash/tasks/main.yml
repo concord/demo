@@ -22,4 +22,4 @@
   command: make -j{{ansible_processor_vcpus}} install
   args:
     chdir: '{{goobly_cache_dir}}/cityhash'
-    creates: '{{third_party_dir}}/lib/cityhash.a'
+    creates: '{{third_party_dir}}/lib/libcityhash.a'

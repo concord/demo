@@ -74,8 +74,8 @@ endfunction ()
 
 
 
-set (CMAKE_CXX_COMPILER g++-4.9)
-set (CMAKE_C_COMPILER gcc-4.9)
+set (CMAKE_CXX_COMPILER g++-5)
+set (CMAKE_C_COMPILER gcc-5)
 set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -v" )
 join ("${CXX_FLAG_LIST}" " " CMAKE_CXX_FLAGS)
 join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
@@ -118,4 +118,28 @@ target_link_libraries (
   sasl2
   :librdkafka.a
   :librdkafka++.a
+  )
+
+add_executable (
+  kafka_source
+  ${PROJECT_SOURCE_DIR}/src/kafka_source/kafka_source.cc
+  )
+target_link_libraries (
+  kafka_source
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
+  rdkafka.a
+  rdkafka++.a
+  )
+
+add_executable (
+  kafka_dumper
+  ${PROJECT_SOURCE_DIR}/src/kafka_dumper/kafka_dumper.cc
+  )
+target_link_libraries (
+  kafka_dumper
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  sasl2
+  rdkafka.a
+  rdkafka++.a
   )

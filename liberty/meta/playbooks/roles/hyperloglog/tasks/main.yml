@@ -10,7 +10,7 @@
     version='018dc0e'
     force=yes
 
-- name: Create /toor/include/hyperloglog
+- name: Create /include/hyperloglog
   file: state=directory
         path='{{third_party_dir}}/include/hyperloglog'
 

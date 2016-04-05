@@ -35,3 +35,5 @@
     - 'doxygen' # needed for docs
     - 'libprocps3-dev' # Used to inspect /proc
     - 'libsasl2-dev' # Used for librdkafka
+    - 'libboost1.55-all-dev' # libbolt.so
+    - 'libuv-dev' # cassandra driver

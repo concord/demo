@@ -11,3 +11,4 @@
     - hyperloglog
     - librdkafka
     - cityhash
+    - cassandra_client
