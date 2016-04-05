@@ -40,7 +40,7 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
 
     std::map<std::string, std::string> defaultOpts{
       {"metadata.broker.list", folly::join(", ", brokers)},
-      {"queue.buffering.max.messages", "10000000"},
+      {"queue.buffering.max.messages", "1000000"},
       {"client.id", "concord_client_id_" + std::to_string(rand_.nextRand())},
       {"statistics.interval.ms", "60000"}}; // every minute
 

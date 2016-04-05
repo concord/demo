@@ -18,6 +18,16 @@ DEFINE_bool(kafka_topics_consume_from_beginning,
 
 
 int main(int argc, char *argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  google::InitGoogleLogging(argv[0]);
+  google::InstallFailureSignalHandler();
+
+
+  LOG(INFO) << "Kafka --borkers: " << FLAGS_kafka_brokers;
+  LOG(INFO) << "Kafka --topics: " << FLAGS_kafka_topics;
+  LOG(INFO) << "Kafka --kafka_topics_consume_from_beginning: "
+            << FLAGS_kafka_topics_consume_from_beginning;
+
   std::unique_ptr<concord::HighLevelKafkaConsumer> kafkaConsumer_;
   std::vector<std::string> brokers;
   std::vector<std::string> ostreams;

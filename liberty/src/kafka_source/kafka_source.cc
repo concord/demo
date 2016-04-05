@@ -76,6 +76,7 @@ class KafkaSource final : public bolt::Computation {
 };
 
 int main(int argc, char *argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
   bolt::logging::glog_init(argv[0]);
   bolt::client::serveComputation(std::make_shared<KafkaSource>(), argc, argv);
   /*

@@ -45,13 +45,12 @@ class KafkaConsumerTopicMetrics {
 // *      partition.assignment.strategy, etc.
 //
 class HighLevelKafkaConsumer : public RdKafka::EventCb,
-                      public RdKafka::OffsetCommitCb,
-                      public RdKafka::RebalanceCb {
+                               public RdKafka::OffsetCommitCb,
+                               public RdKafka::RebalanceCb {
   public:
-
   HighLevelKafkaConsumer(const std::vector<std::string> &brokers,
-                const std::vector<KafkaConsumerTopicMetadata> &topics,
-                const std::map<std::string, std::string> &opts = {}) {
+                         const std::vector<KafkaConsumerTopicMetadata> &topics,
+                         const std::map<std::string, std::string> &opts = {}) {
     clusterConfig_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
     topicMetadata_ = topics;
     defaultTopicConf_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
@@ -134,7 +133,6 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
         run = fn(std::move(m));
         break;
       case RdKafka::ERR__PARTITION_EOF:
-        LOG(INFO) << "Reached end of parition for topic: " << m->topic();
         break;
       case RdKafka::ERR__UNKNOWN_TOPIC:
       case RdKafka::ERR__UNKNOWN_PARTITION:
@@ -170,6 +168,9 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
   rebalance_cb(RdKafka::KafkaConsumer *consumer,
                RdKafka::ErrorCode err,
                std::vector<RdKafka::TopicPartition *> &partitions) override {
+
+    LOG(INFO) << "RdKafka::RebalanceCb. partitions: " << partitions.size();
+
     const auto assignment =
       (err == RdKafka::ERR__ASSIGN_PARTITIONS ? "Assigned" : "Revoked");
 
