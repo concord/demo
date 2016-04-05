@@ -105,6 +105,13 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
         defaultOpts.insert(t);
       }
     }
+    // compuate max fetch.message.max.bytes
+    auto maxMsgBytes = std::stol(defaultOpts["receive.message.max.bytes"]);
+    // our default # of partitions
+    maxMsgBytes /= 144;
+    maxMsgBytes /= topics.size();
+    maxMsgBytes -= 10000; // Some constant for the overhead
+    defaultOpts["fetch.message.max.bytes"] = std::to_string(maxMsgBytes);
 
     LOG_IF(INFO, defaultOpts.find("compression.codec") == defaultOpts.end())
       << "No kafka codec selected. Consider using compression.codec:snappy "
