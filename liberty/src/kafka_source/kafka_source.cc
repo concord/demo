@@ -15,6 +15,7 @@ DEFINE_string(kafka_topics, "", "coma delimited list of topics");
 DEFINE_bool(kafka_topics_consume_from_beginning,
             false,
             "should the driver consume from the begining");
+DEFINE_string(kafka_consumer_group_id, "", "name of the consumer group");
 
 class KafkaSource final : public bolt::Computation {
   public:
@@ -26,6 +27,10 @@ class KafkaSource final : public bolt::Computation {
     std::vector<concord::KafkaConsumerTopicMetadata> topics;
     for(auto &s : ostreams_) {
       topics.emplace_back(s, FLAGS_kafka_topics_consume_from_beginning);
+    }
+    std::map<std::string, std::string> opts{};
+    if(!FLAGS_kafka_consumer_group_id.empty()) {
+      opts.insert({"group.id", FLAGS_kafka_consumer_group_id});
     }
     kafkaConsumer_.reset(new concord::HighLevelKafkaConsumer(brokers, topics));
   }
