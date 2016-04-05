@@ -182,22 +182,25 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
                RdKafka::ErrorCode err,
                std::vector<RdKafka::TopicPartition *> &partitions) override {
     LOG(INFO) << "RdKafka::RebalanceCb. partitions: " << partitions.size();
-    // compuate max fetch.message.max.bytes
-    std::string maxBytesStr = "";
-    if(clusterConfig_->get("receive.message.max.bytes", maxBytesStr)
-         != RdKafka::Conf::CONF_OK
-       || maxBytesStr.empty()) {
-      maxBytesStr = "0";
+    if(!partitions.empty()) {
+      // compuate max fetch.message.max.bytes
+      std::string maxBytesStr = "";
+      if(clusterConfig_->get("receive.message.max.bytes", maxBytesStr)
+           != RdKafka::Conf::CONF_OK
+         || maxBytesStr.empty()) {
+        maxBytesStr = "0";
+      }
+      auto maxMsgBytes = std::stol(maxBytesStr);
+      // our default # of partitions
+      maxMsgBytes /= partitions.size();
+      maxMsgBytes -= 10000; // Some constant for the overhead
+      maxMsgBytes = std::max(512, maxMsgBytes); // failsafe
+      std::string kafkaErr;
+      LOG_IF(ERROR, clusterConfig_->set("fetch.message.max.bytes",
+                                        std::to_string(maxMsgBytes), kafkaErr)
+                      != RdKafka::Conf::CONF_OK)
+        << kafkaErr;
     }
-    auto maxMsgBytes = std::stol(maxBytesStr);
-    // our default # of partitions
-    maxMsgBytes /= partitions.size();
-    maxMsgBytes -= 10000; // Some constant for the overhead
-    std::string kafkaErr;
-    LOG_IF(ERROR, clusterConfig_->set("fetch.message.max.bytes",
-                                      std::to_string(maxMsgBytes), kafkaErr)
-                    != RdKafka::Conf::CONF_OK)
-      << kafkaErr;
     const auto assignment =
       (err == RdKafka::ERR__ASSIGN_PARTITIONS ? "Assigned" : "Revoked");
 
