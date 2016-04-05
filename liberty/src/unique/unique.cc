@@ -8,7 +8,7 @@
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
 #include "kafka_utils/HighLevelKafkaProducer.hpp"
-
+#include <gflags/gflags.h>
 
 DEFINE_string(kafka_brokers, "localhost:9092", "seed kafka brokers");
 DEFINE_string(kafka_unique_topic_out,
@@ -32,15 +32,15 @@ std::ostream &operator<<(std::ostream &o, const struct bloom &bloom) {
 class Unique final : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
-  // 10 Million unique entries
-  Unique() {
-    bloom_init(&bloom_, 265'569'231llu, 0.08);
+  virtual void init(CtxPtr ctx) override {
+    LOG(INFO) << "Initializing bloom filter";
+    bloom_init(&bloom_, 265569231, 0.08);
+    LOG(INFO) << "--kafka_brokers: " << FLAGS_kafka_brokers;
     std::vector<std::string> brokers;
     folly::split(",", FLAGS_kafka_brokers, brokers);
+    LOG(INFO) << "--kafka_unique_topic_out: " << FLAGS_kafka_unique_topic_out;
     std::vector<std::string> topics = {FLAGS_kafka_unique_topic_out};
     kafkaProducer_.reset(new concord::HighLevelKafkaProducer(brokers, topics));
-  }
-  virtual void init(CtxPtr ctx) override {
     ctx->setTimer("print_loop", bolt::timeNowMilli());
     LOG(INFO) << "Initializing unique with bloom_: " << bloom_;
   }
@@ -96,8 +96,8 @@ class Unique final : public bolt::Computation {
 };
 
 int main(int argc, char *argv[]) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
   bolt::logging::glog_init(argv[0]);
   bolt::client::serveComputation(std::make_shared<Unique>(), argc, argv);
-
   return 0;
 }

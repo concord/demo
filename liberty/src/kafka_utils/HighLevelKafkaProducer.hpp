@@ -67,6 +67,8 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
     // on the kafka broker itself. On the server.properties.
     // num.partitions=144;
     for(const auto &t : defaultOpts) {
+      LOG(INFO) << "Kafka " << RdKafka::version_str() << " " << t.first << ":"
+                << t.second;
       LOG_IF(ERROR, clusterConfig_->set(t.first, t.second, err)
                       != RdKafka::Conf::CONF_OK)
         << "Could not set variable: " << t.first << " -> " << t.second << err;
