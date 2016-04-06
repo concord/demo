@@ -83,12 +83,11 @@ join ("${BASE_FLAGS}" " " CMAKE_C_FLAGS)
 
 
 add_executable (
-  log_counter
-  ${PROJECT_SOURCE_DIR}/src/log_parser.cc
-  ${PROJECT_SOURCE_DIR}/src/log_counter.cc
+  count
+  ${PROJECT_SOURCE_DIR}/src/count/count.cc
   )
 target_link_libraries (
-  log_counter
+  count
   ${BASE_CPP_CLIENT_LIBRARIES}
   libre2.a
   )
@@ -143,3 +142,40 @@ target_link_libraries (
   rdkafka.a
   rdkafka++.a
   )
+
+add_executable (
+  match
+  ${PROJECT_SOURCE_DIR}/src/match/match.cc
+  )
+target_link_libraries (
+  match
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  cityhash.a
+  re2.a
+  uv
+  cassandra_static.a
+  )
+
+add_executable (
+  time_count
+  ${PROJECT_SOURCE_DIR}/src/time_count/time_count.cc
+  )
+target_link_libraries (
+  time_count
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  )
+
+add_executable (
+  time_match
+  ${PROJECT_SOURCE_DIR}/src/time_match/time_match.cc
+  )
+target_link_libraries (
+  time_match
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  re2.a
+  cityhash.a
+  uv
+  cassandra_static.a
+  )
+
+

@@ -78,8 +78,8 @@ int main(int argc, char **argv) {
 
   std::ifstream infile(FLAGS_file_name);
   std::string line;
-  const uint64_t bytesLimit = FLAGS_limit_gb * 1000000000;
-  while(std::getline(infile, line) && bytesSent < bytesLimit) {
+  //const uint64_t bytesLimit = FLAGS_limit_gb * 1000000000;
+  while(std::getline(infile, line)) {
     produce_line(line, producer, topic);
   }
 
