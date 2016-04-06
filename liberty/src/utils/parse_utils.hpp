@@ -12,7 +12,8 @@ LogTuple buildKeyAndValue(const std::string &log) {
   // username associated with the event (if any, e.g. src@ladmin)
   // node name (e.g. src@ladmin)
   // The line’s log payload
-  static RE2 valueRegex("-\\s(\\d+)(?:\\s\\S+){5}\\s(\\w+)(.)(\\w+)\\s(.*)$");
+  static const RE2 valueRegex(
+    "-\\s(\\d+)(?:\\s\\S+){5}\\s(\\w+)(.)(\\w+)\\s(.*)$");
   int timestamp; // value is in seconds
   char nodeChar;
   std::string username, nodename, msg, key, value;
