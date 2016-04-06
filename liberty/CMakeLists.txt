@@ -178,4 +178,27 @@ target_link_libraries (
   cassandra_static.a
   )
 
+add_executable (
+  bucket_count
+  ${PROJECT_SOURCE_DIR}/src/bucket_count/bucket_count.cc
+  )
+target_link_libraries (
+  bucket_count
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  )
+
+add_executable (
+  bucket_match
+  ${PROJECT_SOURCE_DIR}/src/bucket_match/bucket_match.cc
+  )
+target_link_libraries (
+  bucket_match
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  re2.a
+  cityhash.a
+  uv
+  cassandra_static.a
+  )
+
+
 

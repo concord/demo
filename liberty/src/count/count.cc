@@ -6,9 +6,7 @@
 #include <concord/Computation.hpp>
 #include <re2/re2.h>
 
-DEFINE_string(kafka_topic,
-              "default_topic",
-              "Kafka topic that consumer is reading from");
+DEFINE_string(kafka_topic, "", "Kafka topic that consumer is reading from");
 
 // Must be between [4, 30] otherwise std::invalid_argument is thrown from HLL
 static const uint8_t kHllRegisterSize = 10;
@@ -19,16 +17,15 @@ class LogCounter final : public bolt::Computation {
 
   LogCounter(const std::string &topic) : kafkaTopic_(topic) {}
 
-  virtual void init(CtxPtr ctx) override {
+  void init(CtxPtr ctx) override {
     LOG(INFO) << "Log Counter initialized.. ready for events";
     LOG(INFO) << "Source kafka topic: " << kafkaTopic_;
     ctx->setTimer("loop", bolt::timeNowMilli());
   }
 
-  virtual void destroy() override { LOG(INFO) << "Shutting down"; }
+  void destroy() override { LOG(INFO) << "Shutting down"; }
 
-  virtual void
-  processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
+  void processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
     for(const auto &month : data_) {
       LOG(INFO) << "Data for the month of: " << month.first;
       for(const auto &year : month.second) {
@@ -40,7 +37,7 @@ class LogCounter final : public bolt::Computation {
     ctx->setTimer("loop", bolt::timeNowMilli() + 2000);
   }
 
-  virtual void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
+  void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
     static RE2 simpleDateRegex("-\\s\\d+\\s(\\d+)\\.\\d+\\.(\\d+)\\s\\w+\\s\\w+"
                                "\\s\\d+\\s\\d+:\\d+:\\d+\\s\\S+\\s(.*)$");
     int year, month;
@@ -59,9 +56,9 @@ class LogCounter final : public bolt::Computation {
     }
   }
 
-  virtual bolt::Metadata metadata() override {
+  bolt::Metadata metadata() override {
     bolt::Metadata m;
-    m.name = "log-counter";
+    m.name = "count";
     m.istreams.insert({kafkaTopic_, bolt::Grouping::GROUP_BY});
     return m;
   }

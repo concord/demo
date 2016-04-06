@@ -1,6 +1,7 @@
 #pragma once
 #include <re2/re2.h>
 #include <city.h>
+#include <concord/time_utils.hpp>
 
 namespace concord {
 using LogTuple = std::tuple<std::string, std::string>;

@@ -2,7 +2,6 @@
 #include <chrono>
 #include <vector>
 #include <deque>
-#include <algorithm>
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
 #include <glog/logging.h>
@@ -61,19 +60,17 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // chronological order
     while(!windows_.empty() && windows_.front().isWindowClosed()) {
       LOG(INFO) << "Closing window!";
-      const auto &w = windows_.front();
-      // Reduce all values inside of window using user supplied reducer func
-      ReducerType acc = std::accumulate(
-        w.records_.begin(), w.records_.end(), ReducerType(),
-        [this](ReducerType &a, std::shared_ptr<bolt::FrameworkRecord> rec) {
-          return opts_.reducerFn(a, rec.get());
-        });
+      const auto &window = windows_.front();
+      ReducerType acc;
+      for(auto r : window.records_) {
+        opts_.reducerFn(acc, r.get());
+      }
       // When the result has finished calculating, call a user supplied
       // callback and produce the result onto any downstream subscribers. The
       // key being the windowID and the value being the calculated result
-      opts_.resultFn(w.begin_, acc);
+      opts_.resultFn(window.begin_, acc);
       for(const auto stream : opts_.metadata.ostreams) {
-        ctx->produceRecord(stream, std::to_string(w.begin_),
+        ctx->produceRecord(stream, std::to_string(window.begin_),
                            opts_.serializerFn(acc));
       }
       windows_.pop_front();
