@@ -8,10 +8,12 @@ DEFINE_int64(slide_interval, 2, "Amount of time(s) between new windows");
 
 namespace concord {
 using ReducerType = std::set<std::string>;
+size_t gTotalRecords = 0;
 
 void windowerFinished(const uint64_t bucket, const ReducerType &results) {
   LOG(INFO) << "Bucket#: " << bucket << " produced " << results.size()
-            << " unique results";
+            << " unique results and " << gTotalRecords << " total results";
+  gTotalRecords = 0;
 }
 
 std::shared_ptr<TimeWindow<ReducerType>> windowedLogCounter() {
@@ -19,14 +21,14 @@ std::shared_ptr<TimeWindow<ReducerType>> windowedLogCounter() {
   std::set<bolt::Metadata::StreamGrouping> istreams{
     {FLAGS_kafka_topic, bolt::Grouping::GROUP_BY}};
   const auto opts =
-    WindowOptions<ReducerType>()
+    TimeWindowOptions<ReducerType>()
       .setWindowLength(std::chrono::seconds(FLAGS_window_length))
       .setSlideInterval(std::chrono::seconds(FLAGS_slide_interval))
       .setComputationMetadata(bolt::Metadata("time-count", istreams))
       .setWindowerResultFunction(windowerFinished)
       .setReducerFunction([](ReducerType &a, const bolt::FrameworkRecord *b) {
-        a.insert(b->value);
-        return a;
+        gTotalRecords++;
+        a.insert(b->key);
       });
   return std::make_shared<TimeWindow<ReducerType>>(opts);
 }

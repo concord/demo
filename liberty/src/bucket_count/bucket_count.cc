@@ -8,10 +8,12 @@ DEFINE_int64(slide_interval, 100000, "Amount of items until next window");
 
 namespace concord {
 using ReducerType = std::set<std::string>;
+size_t gTotalRecords = 0;
 
 void windowerFinished(const uint64_t bucket, const ReducerType &results) {
   LOG(INFO) << "Bucket#: " << bucket << " produced " << results.size()
             << " unique results";
+  gTotalRecords = 0;
 }
 
 std::shared_ptr<CountWindow<ReducerType>> bucketCountFactory() {
@@ -19,16 +21,15 @@ std::shared_ptr<CountWindow<ReducerType>> bucketCountFactory() {
   std::set<bolt::Metadata::StreamGrouping> istreams{
     {FLAGS_kafka_topic, bolt::Grouping::GROUP_BY}};
   const auto opts =
-    WindowOptions<ReducerType>()
-      .setWindowLength(std::chrono::seconds(FLAGS_window_length))
-      .setSlideInterval(std::chrono::seconds(FLAGS_slide_interval))
+    CountWindowOptions<ReducerType>()
+      .setWindowLength(FLAGS_window_length)
+      .setSlideInterval(FLAGS_slide_interval)
       .setComputationMetadata(bolt::Metadata("bucket-count", istreams))
       .setWindowerResultFunction(windowerFinished)
       .setReducerFunction([](ReducerType &a, const bolt::FrameworkRecord *b) {
-        a.insert(b->value);
-        return a;
+        gTotalRecords++;
+        a.insert(b->key);
       });
-
   return std::make_shared<CountWindow<ReducerType>>(opts);
 }
 }

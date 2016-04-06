@@ -11,7 +11,7 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
 
-  TimeWindow(const WindowOptions<ReducerType> &options) : opts_(options) {
+  TimeWindow(const TimeWindowOptions<ReducerType> &options) : opts_(options) {
     CHECK(!opts_.metadata.istreams.empty()) << "Must contain istreams";
   }
   virtual ~TimeWindow() {}
@@ -25,7 +25,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // Every 'slideInterval_' period create a new window
     // Every 'windowLength_' period evaluate all windows
     if(key == "interval_loop") {
-      LOG(INFO) << "Creating window";
       windows_.push_back(Window(opts_.windowLength));
       const auto windowClose = windows_.back().end_;
       const auto nextWindow =
@@ -33,7 +32,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
       ctx->setTimer("interval_loop", nextWindow);
       ctx->setTimer("window_loop", windowClose);
     } else if(key == "window_loop") {
-      LOG(INFO) << "Processing window";
       processWindows(ctx);
     } else {
       throw std::logic_error("Unexpected type of timer was set");
@@ -59,7 +57,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // Only perform processing on closed windows.. windows will be queued in
     // chronological order
     while(!windows_.empty() && windows_.front().isWindowClosed()) {
-      LOG(INFO) << "Closing window!";
       const auto &window = windows_.front();
       ReducerType acc;
       for(auto r : window.records_) {
@@ -95,7 +92,7 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
   };
 
   private:
-  const WindowOptions<ReducerType> opts_;
+  const TimeWindowOptions<ReducerType> opts_;
   std::deque<Window> windows_;
 };
 }

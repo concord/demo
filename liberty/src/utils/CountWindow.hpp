@@ -9,7 +9,7 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
 
-  CountWindow(const WindowOptions<ReducerType> &opts) : opts_(opts) {
+  CountWindow(const CountWindowOptions<ReducerType> &opts) : opts_(opts) {
     CHECK(!opts_.metadata.istreams.empty()) << "Must contain istreams";
   }
   virtual ~CountWindow() {}
@@ -28,6 +28,7 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
 
     // Create new window if count is within slide
     if(isNextWindowReady()) {
+      LOG(INFO) << "Adding window count: " << recordCount_;
       windows_.push_back(Window(windowCount_++));
     }
 
@@ -52,11 +53,14 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
   };
 
   bool isWindowFull(const Window &w) const {
-    return w.records_.size() >= opts_.windowLength.count();
+    return w.records_.size() >= opts_.windowLength;
   }
 
   bool isNextWindowReady() const {
-    return recordCount_ % opts_.slideInterval.count() == 0;
+    if(recordCount_ == 0) {
+      return true;
+    }
+    return recordCount_ % opts_.slideInterval == 0;
   }
 
   // Code duplication
@@ -75,7 +79,7 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
     }
   }
 
-  const WindowOptions<ReducerType> opts_;
+  const CountWindowOptions<ReducerType> opts_;
   uint64_t recordCount_{0};
   uint64_t windowCount_{0};
   std::deque<Window> windows_;

@@ -24,7 +24,7 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
   BucketedPatternMatcher(const std::string &cassandraNodes,
                          const std::string &cassandraKeyspace,
                          const std::string &cassandraTable,
-                         const WindowOptions<ReducerType> &opts)
+                         const CountWindowOptions<ReducerType> &opts)
     : CountWindow<ReducerType>(addOptionsCallbacks(opts))
     , cassandraTable_(cassandraTable)
     , cassClient_(new CassandraClient(cassandraNodes, cassandraKeyspace)) {
@@ -42,7 +42,7 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
               << " unique results";
   }
 
-  ReducerType reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {
+  void reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {
     static const std::string kLogPattern("IRQ");
     const auto &log = b->value;
     if(log.end() != boost::algorithm::boyer_moore_search(log.begin(), log.end(),
@@ -55,14 +55,13 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
         a[key] = value;
       }
     }
-    return a;
   }
 
   private:
-  WindowOptions<ReducerType>
-  addOptionsCallbacks(const WindowOptions<ReducerType> &opts) {
+  CountWindowOptions<ReducerType>
+  addOptionsCallbacks(const CountWindowOptions<ReducerType> &opts) {
     using namespace std::placeholders;
-    return WindowOptions<ReducerType>(opts)
+    return CountWindowOptions<ReducerType>(opts)
       .setReducerFunction(
          std::bind(&BucketedPatternMatcher::reduceEvents, this, _1, _2))
       .setWindowerResultFunction(
@@ -78,9 +77,9 @@ std::shared_ptr<BucketedPatternMatcher> bucketMatchFactory() {
   std::set<bolt::Metadata::StreamGrouping> istreams{
     {FLAGS_kafka_topic, bolt::Grouping::ROUND_ROBIN}};
   const auto baseOpts =
-    WindowOptions<ReducerType>()
-      .setWindowLength(std::chrono::seconds(FLAGS_window_length))
-      .setSlideInterval(std::chrono::seconds(FLAGS_slide_interval))
+    CountWindowOptions<ReducerType>()
+      .setWindowLength(FLAGS_window_length)
+      .setSlideInterval(FLAGS_slide_interval)
       .setComputationMetadata(bolt::Metadata("time-match", istreams));
   return std::make_shared<BucketedPatternMatcher>(
     FLAGS_cassandra_nodes, FLAGS_cassandra_keyspace, FLAGS_cassandra_table,

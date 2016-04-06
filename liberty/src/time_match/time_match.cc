@@ -22,7 +22,7 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
   WindowedPatternMatcher(const std::string &cassandraNodes,
                          const std::string &cassandraKeyspace,
                          const std::string &cassandraTable,
-                         const WindowOptions<ReducerType> &opts)
+                         const TimeWindowOptions<ReducerType> &opts)
     : TimeWindow<ReducerType>(addOptionsCallbacks(opts))
     , cassandraTable_(cassandraTable)
     , cassClient_(new CassandraClient(cassandraNodes, cassandraKeyspace)) {
@@ -40,7 +40,7 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
               << " unique results";
   }
 
-  ReducerType reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {
+  void reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {
     static const std::string kLogPattern("IRQ");
     const auto &log = b->value;
     if(log.end() != boost::algorithm::boyer_moore_search(log.begin(), log.end(),
@@ -53,14 +53,13 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
         a[key] = value;
       }
     }
-    return a;
   }
 
   private:
-  WindowOptions<ReducerType>
-  addOptionsCallbacks(const WindowOptions<ReducerType> &opts) {
+  TimeWindowOptions<ReducerType>
+  addOptionsCallbacks(const TimeWindowOptions<ReducerType> &opts) {
     using namespace std::placeholders;
-    return WindowOptions<ReducerType>(opts)
+    return TimeWindowOptions<ReducerType>(opts)
       .setReducerFunction(
          std::bind(&WindowedPatternMatcher::reduceEvents, this, _1, _2))
       .setWindowerResultFunction(
@@ -76,7 +75,7 @@ std::shared_ptr<WindowedPatternMatcher> timeMatchFactory() {
   std::set<bolt::Metadata::StreamGrouping> istreams{
     {FLAGS_kafka_topic, bolt::Grouping::GROUP_BY}};
   const auto baseOpts =
-    WindowOptions<ReducerType>()
+    TimeWindowOptions<ReducerType>()
       .setWindowLength(std::chrono::seconds(FLAGS_window_length))
       .setSlideInterval(std::chrono::seconds(FLAGS_slide_interval))
       .setComputationMetadata(bolt::Metadata("time-match", istreams));
