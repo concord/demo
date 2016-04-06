@@ -2,7 +2,6 @@
 #include <chrono>
 #include <vector>
 #include <deque>
-#include <algorithm>
 #include <concord/Computation.hpp>
 #include <concord/time_utils.hpp>
 #include <glog/logging.h>
@@ -12,7 +11,9 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
 
-  TimeWindow(const WindowOptions<ReducerType> &options) : opts_(options) {}
+  TimeWindow(const TimeWindowOptions<ReducerType> &options) : opts_(options) {
+    CHECK(!opts_.metadata.istreams.empty()) << "Must contain istreams";
+  }
   virtual ~TimeWindow() {}
 
   void destroy() override {}
@@ -24,7 +25,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // Every 'slideInterval_' period create a new window
     // Every 'windowLength_' period evaluate all windows
     if(key == "interval_loop") {
-      LOG(INFO) << "Creating window";
       windows_.push_back(Window(opts_.windowLength));
       const auto windowClose = windows_.back().end_;
       const auto nextWindow =
@@ -32,7 +32,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
       ctx->setTimer("interval_loop", nextWindow);
       ctx->setTimer("window_loop", windowClose);
     } else if(key == "window_loop") {
-      LOG(INFO) << "Processing window";
       processWindows(ctx);
     } else {
       throw std::logic_error("Unexpected type of timer was set");
@@ -58,20 +57,17 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // Only perform processing on closed windows.. windows will be queued in
     // chronological order
     while(!windows_.empty() && windows_.front().isWindowClosed()) {
-      LOG(INFO) << "Closing window!";
-      const auto &w = windows_.front();
-      // Reduce all values inside of window using user supplied reducer func
-      ReducerType acc = std::accumulate(
-        w.records_.begin(), w.records_.end(), ReducerType(),
-        [this](ReducerType &a, std::shared_ptr<bolt::FrameworkRecord> rec) {
-          return opts_.reducerFn(a, rec.get());
-        });
+      const auto &window = windows_.front();
+      ReducerType acc;
+      for(auto r : window.records_) {
+        opts_.reducerFn(acc, r.get());
+      }
       // When the result has finished calculating, call a user supplied
       // callback and produce the result onto any downstream subscribers. The
       // key being the windowID and the value being the calculated result
-      opts_.resultFn(w.begin_, acc);
+      opts_.resultFn(window.begin_, acc);
       for(const auto stream : opts_.metadata.ostreams) {
-        ctx->produceRecord(stream, std::to_string(w.begin_),
+        ctx->produceRecord(stream, std::to_string(window.begin_),
                            opts_.serializerFn(acc));
       }
       windows_.pop_front();
@@ -96,7 +92,7 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
   };
 
   private:
-  const WindowOptions<ReducerType> opts_;
+  const TimeWindowOptions<ReducerType> opts_;
   std::deque<Window> windows_;
 };
 }

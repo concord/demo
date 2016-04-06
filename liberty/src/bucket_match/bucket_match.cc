@@ -4,26 +4,28 @@
 #include <concord/glog_init.hpp>
 #include <boost/algorithm/searching/boyer_moore.hpp>
 #include "cassandra/CassandraClient.hpp"
-#include "utils/TimeWindow.hpp"
+#include "utils/CountWindow.hpp"
 #include "utils/parse_utils.hpp"
 
 DEFINE_string(kafka_topic, "", "Kafka topic that consumer is reading from");
 DEFINE_string(cassandra_nodes, "127.0.0.1", "Cassandra endpoints");
 DEFINE_string(cassandra_keyspace, "", "Cassandra keyspace");
 DEFINE_string(cassandra_table, "irq", "Cassandra table name");
-DEFINE_int64(window_length, 10, "Amount of time(s) to aggregate records");
-DEFINE_int64(slide_interval, 10, "Amount of time(s) between new windows");
+DEFINE_int64(window_length, 1000000, "Amount of time(s) to aggregate records");
+DEFINE_int64(slide_interval, 100000, "Amount of time(s) between new windows");
 
 namespace concord {
 using ReducerType = std::map<std::string, std::string>;
 
-class WindowedPatternMatcher : public TimeWindow<ReducerType> {
+/// SAME code as WindowedPatternMatcher, with the exception of the supertype.
+/// TODO: establish a way to abstract the similarities.
+class BucketedPatternMatcher : public CountWindow<ReducerType> {
   public:
-  WindowedPatternMatcher(const std::string &cassandraNodes,
+  BucketedPatternMatcher(const std::string &cassandraNodes,
                          const std::string &cassandraKeyspace,
                          const std::string &cassandraTable,
-                         const TimeWindowOptions<ReducerType> &opts)
-    : TimeWindow<ReducerType>(addOptionsCallbacks(opts))
+                         const CountWindowOptions<ReducerType> &opts)
+    : CountWindow<ReducerType>(addOptionsCallbacks(opts))
     , cassandraTable_(cassandraTable)
     , cassClient_(new CassandraClient(cassandraNodes, cassandraKeyspace)) {
     LOG_IF(FATAL, !cassClient_->isConnected())
@@ -56,14 +58,14 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
   }
 
   private:
-  TimeWindowOptions<ReducerType>
-  addOptionsCallbacks(const TimeWindowOptions<ReducerType> &opts) {
+  CountWindowOptions<ReducerType>
+  addOptionsCallbacks(const CountWindowOptions<ReducerType> &opts) {
     using namespace std::placeholders;
-    return TimeWindowOptions<ReducerType>(opts)
+    return CountWindowOptions<ReducerType>(opts)
       .setReducerFunction(
-         std::bind(&WindowedPatternMatcher::reduceEvents, this, _1, _2))
+         std::bind(&BucketedPatternMatcher::reduceEvents, this, _1, _2))
       .setWindowerResultFunction(
-        std::bind(&WindowedPatternMatcher::windowerFinished, this, _1, _2));
+        std::bind(&BucketedPatternMatcher::windowerFinished, this, _1, _2));
   }
 
   const std::string cassandraTable_;
@@ -71,15 +73,15 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
 };
 
 
-std::shared_ptr<WindowedPatternMatcher> timeMatchFactory() {
+std::shared_ptr<BucketedPatternMatcher> bucketMatchFactory() {
   std::set<bolt::Metadata::StreamGrouping> istreams{
-    {FLAGS_kafka_topic, bolt::Grouping::GROUP_BY}};
+    {FLAGS_kafka_topic, bolt::Grouping::ROUND_ROBIN}};
   const auto baseOpts =
-    TimeWindowOptions<ReducerType>()
-      .setWindowLength(std::chrono::seconds(FLAGS_window_length))
-      .setSlideInterval(std::chrono::seconds(FLAGS_slide_interval))
+    CountWindowOptions<ReducerType>()
+      .setWindowLength(FLAGS_window_length)
+      .setSlideInterval(FLAGS_slide_interval)
       .setComputationMetadata(bolt::Metadata("time-match", istreams));
-  return std::make_shared<WindowedPatternMatcher>(
+  return std::make_shared<BucketedPatternMatcher>(
     FLAGS_cassandra_nodes, FLAGS_cassandra_keyspace, FLAGS_cassandra_table,
     baseOpts);
 }
@@ -87,13 +89,13 @@ std::shared_ptr<WindowedPatternMatcher> timeMatchFactory() {
 
 int main(int argc, char *argv[]) {
   bolt::logging::glog_init(argv[0]);
-  google::SetUsageMessage("Start WindowedPatternMatcher operator\n"
+  google::SetUsageMessage("Start BucketedPatternMatcher operator\n"
                           "Usage:\n"
                           "\tkafka topic\t--kafka_topic topic_name \\\n"
                           "\twindow length\t--window_length time_sec \\\n"
                           "\tslide interval\t--slide_interval time_sec \\\n"
                           "\n");
   google::ParseCommandLineFlags(&argc, &argv, true);
-  bolt::client::serveComputation(concord::timeMatchFactory(), argc, argv);
+  bolt::client::serveComputation(concord::bucketMatchFactory(), argc, argv);
   return 0;
 }

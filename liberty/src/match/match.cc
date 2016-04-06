@@ -64,7 +64,7 @@ class PatternMatcher : public bolt::Computation {
   bolt::Metadata metadata() override {
     std::set<bolt::Metadata::StreamGrouping> istreams{
       {kafkaTopicName_, bolt::Grouping::GROUP_BY}};
-    return bolt::Metadata("pattern-matcher", istreams);
+    return bolt::Metadata("match", istreams);
   }
 
   private:

@@ -4,12 +4,12 @@
   "zookeeper_path":"/concord",
   "executable_name": "./build/time_count",
   "compress_files": ["./build/time_count"],
-  "computation_name": "timed-counter",
+  "computation_name": "time-count",
   "executable_arguments": [
     "--v=1",
     "--logtostderr=1",
-    "--kafka_topic=liberty2",
-    "--window_length=2",
-    "--slide_interval=1"
+    "--kafka_topic=sentences",
+    "--window_length=1",
+    "--slide_interval=2"
   ]
 }
