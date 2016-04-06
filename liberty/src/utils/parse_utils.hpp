@@ -18,8 +18,8 @@ LogTuple buildKeyAndValue(const std::string &log) {
   if(RE2::FullMatch(log, valueRegex, &timestamp, &username, &nodeChar,
                     &nodename, &msg)) {
     key = CityHash64(log.data(), log.size()) + timestamp;
-    value = bolt::timeInMillisAsIso8601(bolt::timeNowMilli()) + "-"
-            + std::to_string(timestamp * 1000) + "-" + username + nodeChar
+    value = bolt::timeInMillisAsIso8601(bolt::timeNowMilli()) + ":"
+            + std::to_string(timestamp * 1000) + ":" + username + nodeChar
             + nodename + ":" + msg;
   }
   return LogTuple(key, value);
