@@ -73,7 +73,21 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
                                err) != RdKafka::Conf::CONF_OK)
       << err;
     // TOPIC!
-    LOG_IF(FATAL, defaultTopicConf_->set("auto.offset.reset", "smallest", err)
+    // The partitions in the TopicPartitions list in RebalanceCb will always
+    // be INVALID(-1001) since no offset fetching from the broker has
+    // taken place yet. Passing a partition with offset=INVALID to assign()
+    // tells it to retrieve the stored offset from the broker, or if
+    // that is not available revert to auto.offset.reset setting, similar w/
+    // the  other constants.
+    //
+    // auto.offset.reset Action to take when there is no initial offset in
+    // offset store or the desired offset is out of range: 'smallest','earliest'
+    // - automatically reset the offset to the smallest offset,
+    // 'largest','latest' - automatically reset the offset to the largest
+    // offset, 'error' - trigger an error which is retrieved by consuming
+    // messages and checking 'message->err'.
+    //
+    LOG_IF(FATAL, defaultTopicConf_->set("auto.offset.reset", "latest", err)
                     != RdKafka::Conf::CONF_OK)
       << err;
 
