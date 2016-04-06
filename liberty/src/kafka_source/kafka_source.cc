@@ -41,6 +41,7 @@ class KafkaSource final : public bolt::Computation {
       kafkaConsumer_->consume([this](std::unique_ptr<RdKafka::Message> msg) {
         while(!queue_.write(std::move(msg))) {
           // this thread's job is just to read
+          std::this_thread::yield();
         }
         return kafkaPoll_;
       });
@@ -58,9 +59,14 @@ class KafkaSource final : public bolt::Computation {
   virtual void
   processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
     ctx->setTimer(key, time); // do it now again :)
-    auto maxRecords = 10240;
+    auto size = queue_.sizeGuess();
+    LOG(INFO) << "queue size: " << size;
+    auto maxRecords = std::min(10240lu, size);
     std::unique_ptr<RdKafka::Message> msg{nullptr};
-    while(maxRecords-- > 0 && queue_.read(msg)) {
+    while(maxRecords-- > 0) {
+      while(!queue_.read(msg)) {
+        continue;
+      }
       ctx->produceRecord(msg->topic_name(), *msg->key(),
                          std::string((char *)msg->payload(), msg->len()));
     }
