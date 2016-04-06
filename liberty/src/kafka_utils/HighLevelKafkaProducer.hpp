@@ -17,7 +17,6 @@ class HighLevelKafkaProducer : public RdKafka::EventCb,
       topicConfig.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
       LOG_IF(FATAL, !topicConfig)
         << "Could not create kafka topic configuration";
-      // clunky librdkafka api
       std::string err;
       topic.reset(
         RdKafka::Topic::create(producer, topicName, topicConfig.get(), err));
