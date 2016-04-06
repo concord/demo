@@ -121,8 +121,14 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
     LOG(INFO) << "Configuration: " << folly::join(" ", *clusterConfig_->dump());
   }
   ~HighLevelKafkaConsumer() {
-    // FIXME(agallego)for loop and print
-    // all the stats per partition
+    for(const auto &s : topicMetrics_) {
+      for(const auto &m : s.second) {
+        LOG(INFO) << "Stop topic: " << s.first << ", partition: " << m.first
+                  << ", currentOffset: " << m.second.currentOffset
+                  << ", bytesReceived: " << m.second.bytesReceived
+                  << ", msgsReceived: " << m.second.msgsReceived;
+      }
+    }
     consumer_->commitSync();
     consumer_->close();
   }
