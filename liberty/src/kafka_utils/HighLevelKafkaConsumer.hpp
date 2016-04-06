@@ -97,7 +97,7 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
     }
 
     std::map<std::string, std::string> defaultOpts{
-      {"metadata.broker.list", folly::join(", ", brokers)},
+      {"metadata.broker.list", folly::join(",", brokers)},
       {"group.id", "concord_group_id_" + folly::join(".", topicNames)},
       {"client.id", "concord_client_id_" + std::to_string(rand_.nextRand())},
       {"receive.message.max.bytes", "100000000"}, // Max receive buff or 100MB
