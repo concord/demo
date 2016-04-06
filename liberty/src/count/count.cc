@@ -76,9 +76,6 @@ int main(int argc, char *argv[]) {
                           "\tlog_counter\t--kafka_topic topic_name \\\n"
                           "\n");
   google::ParseCommandLineFlags(&argc, &argv, true);
-  if(FLAGS_kafka_topic == "default_topic") {
-    LOG(FATAL) << "Topic not found";
-  }
   bolt::client::serveComputation(
     std::make_shared<LogCounter>(FLAGS_kafka_topic), argc, argv);
   return 0;
