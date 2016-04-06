@@ -164,3 +164,18 @@ target_link_libraries (
   time_count
   ${BASE_CPP_CLIENT_LIBRARIES}
   )
+
+add_executable (
+  time_match
+  ${PROJECT_SOURCE_DIR}/src/time_match/time_match.cc
+  )
+target_link_libraries (
+  time_match
+  ${BASE_CPP_CLIENT_LIBRARIES}
+  re2.a
+  cityhash.a
+  uv
+  cassandra_static.a
+  )
+
+

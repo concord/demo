@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <queue>
 #include <memory>
 #include <cassandra.h>
 #include <stdio.h>
