@@ -52,7 +52,6 @@ class KafkaConsumerTopicMetrics {
 // *      partition.assignment.strategy, etc.
 //
 class HighLevelKafkaConsumer : public RdKafka::EventCb,
-                               public RdKafka::OffsetCommitCb,
                                public RdKafka::RebalanceCb {
   public:
   HighLevelKafkaConsumer(const std::vector<std::string> &brokers,
@@ -63,10 +62,6 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
     defaultTopicConf_.reset(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
     std::string err;
     LOG_IF(FATAL, clusterConfig_->set("event_cb", (RdKafka::EventCb *)this, err)
-                    != RdKafka::Conf::CONF_OK)
-      << err;
-    LOG_IF(FATAL, clusterConfig_->set("offset_commit_cb",
-                                      (RdKafka::OffsetCommitCb *)this, err)
                     != RdKafka::Conf::CONF_OK)
       << err;
     LOG_IF(FATAL,
@@ -161,21 +156,6 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
   void commit() { consumer_->commitAsync(); }
 
   public:
-  // callbacks
-  // RdKafka::OffsetCommitCb methods
-  virtual void
-  offset_commit_cb(RdKafka::ErrorCode err,
-                   std::vector<RdKafka::TopicPartition *> &offsets) override {
-    if(err == RdKafka::ERR__NO_OFFSET) {
-      /* No offsets to commit, dont report anything. */
-      return;
-    }
-    for(const auto &o : offsets) {
-      LOG(INFO) << "Commited offset for: " << o->topic()
-                << ", offset: " << o->offset()
-                << ", partition: " << o->partition();
-    }
-  }
   // RdKafka::RebalanceCb
   virtual void
   rebalance_cb(RdKafka::KafkaConsumer *consumer,
