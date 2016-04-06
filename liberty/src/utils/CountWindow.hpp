@@ -8,7 +8,7 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
   using Window = std::vector<std::shared_ptr<bolt::FrameworkRecord>>;
 
   CountWindow(const WindowOptions<ReducerType> &opts) : opts_(opts) {
-    // CHECK(!opts_.metadata.empty()) << "Must contain istreams";
+    CHECK(!opts_.metadata.istreams.empty()) << "Must contain istreams";
   }
   virtual ~CountWindow() {}
   void destroy() override {}

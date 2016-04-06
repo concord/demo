@@ -12,7 +12,9 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
   public:
   using CtxPtr = bolt::Computation::CtxPtr;
 
-  TimeWindow(const WindowOptions<ReducerType> &options) : opts_(options) {}
+  TimeWindow(const WindowOptions<ReducerType> &options) : opts_(options) {
+    CHECK(!opts_.metadata.istreams.empty()) << "Must contain istreams";
+  }
   virtual ~TimeWindow() {}
 
   void destroy() override {}
