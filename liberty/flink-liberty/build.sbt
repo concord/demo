@@ -27,5 +27,8 @@ lazy val root = (project in file(".")).
 
 mainClass in assembly := Some("io.concord.jobs.WordCountJob")
 
-// exclude Scala library from assembly
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+mergeStrategy in assembly := {
+  case x if x.endsWith("project.clj") => MergeStrategy.discard // Leiningen build files
+  case x if x.toLowerCase.startsWith("meta-inf") => MergeStrategy.discard // More bumf
+  case _ => MergeStrategy.first
+}

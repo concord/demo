@@ -9,7 +9,7 @@ case class LogLine(
 object LineParser {
   // Thanks Alex
   private[this] val lineRegex =
-    """-\s(\d+)\s\d+\.\d+\.\d+\s\w+\s\w+\s\d+\s\d+:\d+:\d+\s\w+@\w+(.*)$""".r
+    """-\s(\d+)\s\d+\.\d+\.\d+\s\w+\s\w+\s\d+\s\d+:\d+:\d+\s\S+\s(.*)$""".r
 
   def apply(line: String): Option[LogLine] = {
     lineRegex.findFirstMatchIn(line).map { mtch =>
