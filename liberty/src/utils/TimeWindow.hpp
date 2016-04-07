@@ -25,7 +25,7 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
     // Every 'slideInterval_' period create a new window
     // Every 'windowLength_' period evaluate all windows
     if(key == "interval_loop") {
-      windows_.push_back(Window(opts_.windowLength));
+      windows_.emplace_back(opts_.windowLength);
       const auto windowClose = windows_.back().end_;
       const auto nextWindow =
         windows_.back().begin_ + opts_.slideInterval.count();
@@ -40,9 +40,6 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
 
   void processRecord(CtxPtr ctx, bolt::FrameworkRecord &&r) override {
     auto recordPtr = std::make_shared<bolt::FrameworkRecord>(r);
-    recordPtr->key = std::move(r.key);
-    recordPtr->value = std::move(r.value);
-    recordPtr->time = bolt::timeNowMilli();
     for(auto &w : windows_) {
       if(w.isWithinWindow(recordPtr.get())) {
         w.records_.push_back(recordPtr);
@@ -67,6 +64,7 @@ template <class ReducerType> class TimeWindow : public bolt::Computation {
       // key being the windowID and the value being the calculated result
       opts_.resultFn(window.begin_, acc);
       for(const auto stream : opts_.metadata.ostreams) {
+        // TODO: Add support for serializerKeyFn_ and serializeValueFn_
         ctx->produceRecord(stream, std::to_string(window.begin_),
                            opts_.serializerFn(acc));
       }

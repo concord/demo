@@ -28,16 +28,13 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
 
     // Create new window if count is within slide
     if(isNextWindowReady()) {
-      LOG(INFO) << "Adding window count: " << recordCount_;
-      windows_.push_back(Window(windowCount_++));
+      windows_.emplace_back(windowCount_++);
     }
 
     // In the case of tumbling windows there may be spaces of time where
     // we aggregate into no buckets.
     if(!windows_.empty()) {
       auto recordPtr = std::make_shared<bolt::FrameworkRecord>(r);
-      recordPtr->key = std::move(r.key);
-      recordPtr->value = std::move(r.value);
       for(auto &w : windows_) {
         w.records_.push_back(recordPtr);
       }
@@ -74,6 +71,7 @@ template <class ReducerType> class CountWindow : public bolt::Computation {
     // the bucket num and the value being the calculated result
     opts_.resultFn(window.bucketNum_, acc);
     for(const auto stream : opts_.metadata.ostreams) {
+      // TODO: Add support for serializerKeyFn_ and serializeValueFn_
       ctx->produceRecord(stream, std::to_string(window.bucketNum_),
                          opts_.serializerFn(acc));
     }
