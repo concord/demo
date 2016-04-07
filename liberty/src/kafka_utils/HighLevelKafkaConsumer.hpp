@@ -7,9 +7,11 @@
 #include "utils/Random.hpp"
 
 
-DEFINE_bool(enable_kafka_consumer_debug,
-            false,
-            "enable debugging hooks _VERY VERBOSE_");
+DEFINE_string(kafka_consumer_debug,
+              "",
+              "all,generic,broker,topic,"
+              "metadata,producer,queue,msg,"
+              "protocol,cgrp,security,fetch");
 
 
 namespace concord {
@@ -103,10 +105,9 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
       {"receive.message.max.bytes", "100000000"}, // Max receive buff or 100MB
       {"fetch.message.max.bytes", "20000"},       // Some smmalller default
       {"statistics.interval.ms", "60000"},        // every minute
+      {"debug", FLAGS_kafka_consumer_debug}       // just set the default opts
     };
-    if(FLAGS_enable_kafka_consumer_debug) {
-      defaultOpts.insert({"debug", "cgrp"});
-    }
+
     for(auto &t : opts) {
       if(defaultOpts.find(t.first) == defaultOpts.end()) {
         defaultOpts.insert(t);
