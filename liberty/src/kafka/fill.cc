@@ -15,7 +15,6 @@ static uint64_t bytesSent = 0;
 DEFINE_string(file_name, "", "Name of file to produce");
 DEFINE_string(topic_name, "", "Name of topic to produce onto");
 DEFINE_string(broker_addr, "", "Address of kafka broker");
-DEFINE_int32(limit_gb, 1, "Estimated amount of data to send");
 
 void produce_line(std::string &line,
                   RdKafka::Producer *producer,
