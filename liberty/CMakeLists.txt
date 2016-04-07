@@ -202,10 +202,21 @@ target_link_libraries (
 
 add_executable (
   latency_csv
-  ${PROJECT_SOURCE_DIR}/src/latency_csv/latency_csv.cc
+  ${PROJECT_SOURCE_DIR}/src/concord_log_processing_utils/latency_csv.cc
   )
 target_link_libraries (
   latency_csv
+  :libglog.so.0.0.0
+  :libgflags.so.2.1.0
+  :libpthread.so
+  re2.a
+  )
+add_executable (
+  throughput_csv
+  ${PROJECT_SOURCE_DIR}/src/concord_log_processing_utils/throughput_csv.cc
+  )
+target_link_libraries (
+  throughput_csv
   :libglog.so.0.0.0
   :libgflags.so.2.1.0
   :libpthread.so
