@@ -7,7 +7,6 @@
 #include <fstream>
 #include <algorithm>
 #include <re2/re2.h>
-#include <unordered_map>
 
 DEFINE_string(latency_file, "", "concat all files and put them here first");
 DEFINE_string(output_csv, "", "csv output file");
@@ -27,16 +26,15 @@ class LatencyBucket {
   std::list<LatencyLine> latencies{};
 };
 
-void addLatencyLine(std::unordered_map<uint64_t, LatencyBucket> &buckets,
+void addLatencyLine(std::map<uint64_t, LatencyBucket> &buckets,
                     LatencyLine &&line) {
   // auto bucket = line.time -= line.time % 1000;
   auto bucket = line.time;
   buckets[bucket].latencies.push_front(std::move(line));
 }
 
-void produceCSVLines(
-  std::ofstream &ofl,
-  const std::unordered_map<uint64_t, LatencyBucket> &buckets) {
+void produceCSVLines(std::ofstream &ofl,
+                     const std::map<uint64_t, LatencyBucket> &buckets) {
 
   ofl << "time,qps" << std::endl;
   for(const auto &t : buckets) {
@@ -64,7 +62,7 @@ int main(int argc, char *argv[]) {
 
   LOG(INFO) << "Using regex" << kLatencyRegex.pattern();
 
-  std::unordered_map<uint64_t, LatencyBucket> buckets{};
+  std::map<uint64_t, LatencyBucket> buckets{};
 
   std::ifstream ifl(FLAGS_latency_file);
   CHECK(ifl) << "Couldn't open input file";
