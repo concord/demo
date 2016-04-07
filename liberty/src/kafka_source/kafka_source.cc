@@ -59,7 +59,7 @@ class KafkaSource final : public bolt::Computation {
   processTimer(CtxPtr ctx, const std::string &key, int64_t time) override {
     ctx->setTimer(key, time); // do it now again :)
     auto size = queue_.sizeGuess();
-    LOG(INFO) << "queue size: " << size;
+    LOG_EVERY_N(INFO, 4096) << "queue size: " << size;
     auto maxRecords = std::min(10240lu, size);
     std::unique_ptr<RdKafka::Message> msg{nullptr};
     while(maxRecords-- > 0) {
