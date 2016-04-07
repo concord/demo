@@ -1,8 +1,9 @@
-""" 
+#!/usr/bin/env python2
+"""
 fetch_results.py
 Python script that fetches the results of mesos executors
 
-Example: 
+Example:
 
 python fetch_results.py -m 23.251.149.196:5050 --regex ".*throughput.txt" \
        -e 15241255235284647057-kafka_source 9415723926703574995-kafka_source
@@ -72,7 +73,7 @@ def get_slave_file(slave_addr, path):
 
 def get_file_paths(sandbox, executor_ids):
     res = []
-    for eid in executor_ids:        
+    for eid in executor_ids:
         plain_id = eid.split('-')[0]
         for path in sandbox.keys():
             if plain_id in path:
@@ -109,17 +110,17 @@ def download_data(data):
     for slave_addr, runs in data.iteritems():
         if not os.path.exists(slave_addr):
             os.makedirs(slave_addr)
-        for run in runs:            
+        for run in runs:
             executor_id, data_paths = run
             print "Executor id: ", executor_id
             executor_path = slave_addr + '/' + executor_id
             if not os.path.exists(executor_path):
                 os.makedirs(executor_path)
-            for mesosfile in data_paths:                
+            for mesosfile in data_paths:
                 filename = executor_path + '/' + mesosfile.split('/')[-1]
                 print "... => Downloading %s from slave %s" % (filename, slave_addr)
                 with open(filename, 'a') as fileh:
-                    fileh.write(get_slave_file(slave_addr, mesosfile))    
+                    fileh.write(get_slave_file(slave_addr, mesosfile))
 
 def main():
     parser = generate_options()
@@ -127,10 +128,10 @@ def main():
     locations = locate_data(get_slave_info(options.master),
                             options.executor_ids, options.regex)
     if os.path.exists(DATA_DIR):
-        shutil.rmtree(DATA_DIR)        
+        shutil.rmtree(DATA_DIR)
     os.makedirs(DATA_DIR)
     os.chdir(DATA_DIR)
     download_data(locations)
-    
+
 if __name__ == "__main__":
     main()
