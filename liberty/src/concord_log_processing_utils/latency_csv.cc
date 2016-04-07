@@ -14,8 +14,8 @@ DEFINE_string(output_csv, "", "csv output file");
 
 class LatencyLine {
   public:
-  uint64_t qps{0};
-  uint64_t duration{0};
+  uint64_t p50{0};
+  uint64_t p999{0};
   uint64_t time{0};
 };
 
@@ -36,12 +36,19 @@ void addLatencyLine(std::map<uint64_t, LatencyBucket> &buckets,
 void produceCSVLines(std::ofstream &ofl,
                      const std::map<uint64_t, LatencyBucket> &buckets) {
 
-  ofl << "time,qps" << std::endl;
+  ofl << "time,p50,p999" << std::endl;
   for(const auto &t : buckets) {
-    auto qps = std::accumulate(
+    double p50 = std::accumulate(
       t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
-      [](const uint64_t &acc, const LatencyLine &l) { return acc + l.qps; });
-    ofl << t.first << "," << qps << std::endl;
+      [](const uint64_t &acc, const LatencyLine &l) { return acc + l.p50; });
+    double p999 = std::accumulate(
+      t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
+      [](const uint64_t &acc, const LatencyLine &l) { return acc + l.p999; });
+    p50 /= t.second.latencies.size();
+    p999 /= t.second.latencies.size();
+
+    ofl << t.first << "," << uint64_t(p50) << "," << uint64_t(p999)
+        << std::endl;
   }
 }
 
@@ -56,9 +63,9 @@ int main(int argc, char *argv[]) {
     FLAGS_output_csv = FLAGS_latency_file + "_out.csv";
   }
 
-  static RE2 kLatencyRegex("\\[(\\d{4})-(\\d{2})-(\\d{2})\\s(\\d{2}):(\\d{2})"
-                           ":(\\d{2})\\.\\d{3}\\](?:\\s\\[\\w+\\])+\\s("
-                           "\\d+)\\s\\w+\\s\\w+\\s(\\d+).*");
+  static RE2 kLatencyRegex("\\[(\\d{4})-(\\d{2})-(\\d{2})\\s(\\d{2}):(\\d{2}):("
+                           "\\d{2})\\.\\d+\\].*p50:\\s(\\d+).*p999:\\s(\\d+)us."
+                           "*");
 
   LOG(INFO) << "Using regex" << kLatencyRegex.pattern();
 
@@ -72,21 +79,14 @@ int main(int argc, char *argv[]) {
 
   while(std::getline(ifl, line)) {
     // clang-format off
-    // [2016-04-06 21:10:58.196] [incoming_throughput] [info] 43240 req in 1001098us. total: 2068663 req
+    // [2016-04-06 21:19:21.549] [principal_latencies] [info] 127.0.0.1:31002: traceId: -2823056735374592900, parentId: 4410988282745891113, id: -307255297444731547, p50: 483us, p95: 963us, p99: 1094us, p999: 1896us
     // clang-format on
-    // 2016
-    // 04
-    // 06
-    // 21
-    // 10
-    // 58
-    // 43240
-    // 1001098
+
     struct LatencyLine l {};
     std::tm time{};
     if(RE2::FullMatch(line, kLatencyRegex, &time.tm_year, &time.tm_mon,
                       &time.tm_mday, &time.tm_hour, &time.tm_min, &time.tm_sec,
-                      &l.qps, &l.duration)) {
+                      &l.p50, &l.p999)) {
       time.tm_year -= 1900;
       time.tm_mon -= 1;
       time.tm_hour -= 1;
