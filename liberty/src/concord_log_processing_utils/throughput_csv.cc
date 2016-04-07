@@ -12,35 +12,35 @@ DEFINE_string(latency_file, "", "concat all files and put them here first");
 DEFINE_string(output_csv, "", "csv output file");
 
 
-class LatencyLine {
+class ThroughputLine {
   public:
   uint64_t qps{0};
   uint64_t duration{0};
   uint64_t time{0};
 };
 
-class LatencyBucket {
+class ThroughputBucket {
   public:
   enum Bucket { SECONDS };
   Bucket bucket;
-  std::list<LatencyLine> latencies{};
+  std::list<ThroughputLine> latencies{};
 };
 
-void addLatencyLine(std::map<uint64_t, LatencyBucket> &buckets,
-                    LatencyLine &&line) {
+void addThroughputLine(std::map<uint64_t, ThroughputBucket> &buckets,
+                       ThroughputLine &&line) {
   // auto bucket = line.time -= line.time % 1000;
   auto bucket = line.time;
   buckets[bucket].latencies.push_front(std::move(line));
 }
 
 void produceCSVLines(std::ofstream &ofl,
-                     const std::map<uint64_t, LatencyBucket> &buckets) {
+                     const std::map<uint64_t, ThroughputBucket> &buckets) {
 
   ofl << "time,qps" << std::endl;
   for(const auto &t : buckets) {
     auto qps = std::accumulate(
       t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
-      [](const uint64_t &acc, const LatencyLine &l) { return acc + l.qps; });
+      [](const uint64_t &acc, const ThroughputLine &l) { return acc + l.qps; });
     ofl << t.first << "," << qps << std::endl;
   }
 }
@@ -56,13 +56,14 @@ int main(int argc, char *argv[]) {
     FLAGS_output_csv = FLAGS_latency_file + "_out.csv";
   }
 
-  static RE2 kLatencyRegex("\\[(\\d{4})-(\\d{2})-(\\d{2})\\s(\\d{2}):(\\d{2})"
-                           ":(\\d{2})\\.\\d{3}\\](?:\\s\\[\\w+\\])+\\s("
-                           "\\d+)\\s\\w+\\s\\w+\\s(\\d+).*");
+  static RE2 kThroughputRegex(
+    "\\[(\\d{4})-(\\d{2})-(\\d{2})\\s(\\d{2}):(\\d{2})"
+    ":(\\d{2})\\.\\d{3}\\](?:\\s\\[\\w+\\])+\\s("
+    "\\d+)\\s\\w+\\s\\w+\\s(\\d+).*");
 
-  LOG(INFO) << "Using regex" << kLatencyRegex.pattern();
+  LOG(INFO) << "Using regex" << kThroughputRegex.pattern();
 
-  std::map<uint64_t, LatencyBucket> buckets{};
+  std::map<uint64_t, ThroughputBucket> buckets{};
 
   std::ifstream ifl(FLAGS_latency_file);
   CHECK(ifl) << "Couldn't open input file";
@@ -82,9 +83,9 @@ int main(int argc, char *argv[]) {
     // 58
     // 43240
     // 1001098
-    struct LatencyLine l {};
+    struct ThroughputLine l {};
     std::tm time{};
-    if(RE2::FullMatch(line, kLatencyRegex, &time.tm_year, &time.tm_mon,
+    if(RE2::FullMatch(line, kThroughputRegex, &time.tm_year, &time.tm_mon,
                       &time.tm_mday, &time.tm_hour, &time.tm_min, &time.tm_sec,
                       &l.qps, &l.duration)) {
       time.tm_year -= 1900;
@@ -92,7 +93,7 @@ int main(int argc, char *argv[]) {
       time.tm_hour -= 1;
       time_t t = std::mktime(&time);
       l.time = t * 1000;
-      addLatencyLine(buckets, std::move(l));
+      addThroughputLine(buckets, std::move(l));
     }
   }
   produceCSVLines(ofl, buckets);
