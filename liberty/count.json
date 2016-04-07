@@ -1,0 +1,13 @@
+{
+  "cpus": 1,
+  "zookeeper_hosts":"127.0.0.1:2181",
+  "zookeeper_path":"/concord",
+  "executable_name": "./build/count",
+  "compress_files": ["./build/count"],
+  "computation_name": "count",
+  "executable_arguments": [
+    "--v=1",
+    "--logtostderr=1",
+    "--kafka_topic=liberty2",
+  ]
+}

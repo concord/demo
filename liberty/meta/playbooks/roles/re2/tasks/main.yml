@@ -1,0 +1,31 @@
+---
+
+-  git:
+    repo='https://github.com/google/re2.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/re2'
+    update=yes
+    recursive=yes
+    version='d36f207'
+    force=yes
+
+- name: Build re2
+  command: make -j{{ansible_processor_vcpus}}
+  args:
+    chdir: '{{goobly_cache_dir}}/re2'
+    creates: '{{goobly_cache_dir}}/re2/obj/libre2.a'
+
+- file: state=directory dest='{{third_party_dir}}/include/re2'
+
+- copy: src='{{item}}'
+        dest='{{third_party_dir}}/include/re2'
+  with_items:
+    - '{{goobly_cache_dir}}/re2/re2/filtered_re2.h'
+    - '{{goobly_cache_dir}}/re2/re2/re2.h'
+    - '{{goobly_cache_dir}}/re2/re2/set.h'
+    - '{{goobly_cache_dir}}/re2/re2/stringpiece.h'
+    - '{{goobly_cache_dir}}/re2/re2/variadic_function.h'
+
+- copy: src='{{goobly_cache_dir}}/re2/obj/libre2.a'
+        dest='{{third_party_dir}}/lib/libre2.a'

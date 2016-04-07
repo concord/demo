@@ -1,0 +1,16 @@
+{
+  "cpus": 1,
+  "zookeeper_hosts":"127.0.0.1:2181",
+  "zookeeper_path":"/concord",
+  "executable_name": "./build/unique",
+  "compress_files": ["./build/unique", "third_party/lib/libbloom.so"],
+  "computation_name": "unique",
+  "environment_variables": [
+    "LD_LIBRARY_PATH=third_party/lib:$LD_LIBRARY_PATH"
+  ],
+  "executable_arguments": [
+    "--v=1",
+    "--kafka_brokers=localhost:9092",
+    "--kafka_unique_topic_out=concord-liberty1"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "cpus": 1,
+  "zookeeper_hosts":"127.0.0.1:2181",
+  "zookeeper_path":"/concord",
+  "executable_name": "./build/bucket_count",
+  "compress_files": ["./build/bucket_count"],
+  "computation_name": "bucket-count",
+  "executable_arguments": [
+    "--v=1",
+    "--logtostderr=1",
+    "--kafka_topic=sentences",
+    "--window_length=100000",
+    "--slide_interval=1000000"
+  ]
+}

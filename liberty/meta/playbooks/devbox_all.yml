@@ -1,0 +1,14 @@
+---
+
+- name: Install & build all development dependencies
+  hosts: localhost
+  roles:
+    - compilation_tooling
+    - folly
+    - nvml
+    - libbloom
+    - re2
+    - hyperloglog
+    - librdkafka
+    - cityhash
+    - cassandra_client

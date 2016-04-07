@@ -1,0 +1,39 @@
+---
+
+- name: install ppas for debian compiler and emacs
+  apt_repository: repo='{{item}}' state=present
+  sudo: yes
+  with_items:
+    - 'ppa:ubuntu-toolchain-r/test'
+    - 'ppa:ubuntu-elisp/ppa'
+
+- name: Install all dev system tools
+  sudo: yes
+  apt:
+    name='{{item}}'
+    state=installed
+    update_cache=yes
+    cache_valid_time=3600
+    force=yes
+  with_items:
+    - 'build-essential'
+    - 'autotools-dev'
+    - 'g++-5'
+    - 'gcc-5'
+    - 'g++-5-multilib'
+    - 'gcc-5-multilib'
+    - 'gcc-5-doc'
+    - 'ccache'
+    - 'cmake'
+    - 'git'
+    - 'binutils-gold'
+    - 'ccache'
+    - 'clang-3.6'
+    - 'clang-format-3.6' # compiler needed
+    - 'clang-modernize-3.6' # compiler formatter
+    - 'libgoogle-perftools-dev' # profiling tools
+    - 'doxygen' # needed for docs
+    - 'libprocps3-dev' # Used to inspect /proc
+    - 'libsasl2-dev' # Used for librdkafka
+    - 'libboost1.55-all-dev' # libbolt.so
+    - 'libuv-dev' # cassandra driver

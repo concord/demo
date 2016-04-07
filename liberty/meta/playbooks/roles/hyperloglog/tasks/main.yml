@@ -1,0 +1,22 @@
+---
+
+-  git:
+    repo='https://github.com/hideo55/cpp-HyperLogLog.git'
+    accept_hostkey=yes
+    clone=yes
+    dest='{{goobly_cache_dir}}/hyperloglog'
+    update=yes
+    recursive=yes
+    version='018dc0e'
+    force=yes
+
+- name: Create /include/hyperloglog
+  file: state=directory
+        path='{{third_party_dir}}/include/hyperloglog'
+
+- name: Copy header only lib contents to include/hyperloglog
+  copy: src='{{ item }}'
+        dest='{{third_party_dir}}/include/hyperloglog'
+  with_items:
+    - '{{goobly_cache_dir}}/hyperloglog/include/hyperloglog.hpp'
+    - '{{goobly_cache_dir}}/hyperloglog/include/murmur3.h'
