@@ -3,8 +3,8 @@
 #include "utils/TimeWindow.hpp"
 
 DEFINE_string(kafka_topic, "", "Kafka topic that consumer is reading from");
-DEFINE_int64(window_length, 1, "Amount of time(s) to aggregate records");
-DEFINE_int64(slide_interval, 2, "Amount of time(s) between new windows");
+DEFINE_int64(window_length, 10, "Amount of time(s) to aggregate records");
+DEFINE_int64(slide_interval, 1, "Amount of time(s) between new windows");
 
 namespace concord {
 using ReducerType = std::set<std::string>;

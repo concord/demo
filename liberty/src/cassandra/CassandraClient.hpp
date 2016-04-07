@@ -4,6 +4,7 @@
 #include <memory>
 #include <cassandra.h>
 #include <stdio.h>
+#include <glog/logging.h>
 
 namespace concord {
 /// Automatic memory management for some common Cass* types

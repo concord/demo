@@ -7,6 +7,10 @@ Example:
 
 python fetch_results.py -m 23.251.149.196:5050 --regex ".*throughput.txt" \
        -e 15241255235284647057-kafka_source 9415723926703574995-kafka_source
+
+Omitting -e fetches all current tasks
+python fetch_results.py -m 23.251.149.196:5050 --regex ".*throughput.txt"
+
 """
 
 import os
@@ -22,7 +26,7 @@ import re
 
 DATA_DIR = './mesos-run-data'
 PERMIT_FILES = [ 'incoming_throughput', 'outgoing_throughput',
-                 'hardware_usage_monitor.txt' 'principal_latencies',
+                 'hardware_usage_monitor' 'principal_latencies',
                  'dispatcher_latencies', 'stderr', 'stdout', '.INFO' ]
 
 def whitelist_file(filename, regex):
@@ -36,10 +40,10 @@ def whitelist_file(filename, regex):
 def generate_options():
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--master", metavar="mesos-master", action="store",
-                        help="i.e: 123.456.789.95")
+                        help="i.e: 123.456.789.95", required=True)
     parser.add_argument('-e','--executor_ids', nargs='+',
-                        help='11260583907712781801-unique, ...', required=True)
-    parser.add_argument('-r', '--regex', action="store", help='*.txt', required=False)
+                        help='11260583907712781801-unique, ...')
+    parser.add_argument('-r', '--regex', action="store", help='*.txt')
     return parser
 
 def mesos_http_req(addr, endpoint, isJson=True):
@@ -58,6 +62,9 @@ def mesos_http_req(addr, endpoint, isJson=True):
         client.close()
         return json.loads(info, encoding="ISO-8859-1")
     return response.read()
+
+def get_master_tasks(master_addr):
+    return mesos_http_req(master_addr, "/tasks")
 
 def get_slave_info(master_addr):
     return mesos_http_req(master_addr, "/slaves")
@@ -108,7 +115,7 @@ def locate_data(slaves, executor_ids, regex=None):
 
 def download_data(data):
     for slave_addr, runs in data.iteritems():
-        if not os.path.exists(slave_addr):
+        if not os.path.exists(slave_addr) and len(runs) > 0:
             os.makedirs(slave_addr)
         for run in runs:
             executor_id, data_paths = run
@@ -122,11 +129,17 @@ def download_data(data):
                 with open(filename, 'a') as fileh:
                     fileh.write(get_slave_file(slave_addr, mesosfile))
 
+def fetch_current_tasks(master_addr):
+    tasks = get_master_tasks(master_addr)['tasks']
+    running = filter(lambda x: x['state'] == 'TASK_RUNNING', tasks)
+    return map(lambda x: x['id'], running)
+
 def main():
     parser = generate_options()
     options = parser.parse_args()
+    executor_ids = fetch_current_tasks(options.master) if options.executor_ids is None else options.executor_ids
     locations = locate_data(get_slave_info(options.master),
-                            options.executor_ids, options.regex)
+                            executor_ids, options.regex)
     if os.path.exists(DATA_DIR):
         shutil.rmtree(DATA_DIR)
     os.makedirs(DATA_DIR)
