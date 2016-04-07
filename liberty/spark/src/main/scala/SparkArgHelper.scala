@@ -12,17 +12,11 @@ class SparkArgHelper(args: Array[String]) {
     @Option(name = "-master", usage = "Spark master url")
     var masterUrl: String = "local[*]"
 
-    @Option(name = "-input", usage = "kafka or text")
-    var input: String = "text"
-
     @Option(name = "-kafka.metadata.broker.list", usage = "kafka broker info")
     var kafka_metadata_broker_list: String = ""
 
     @Option(name = "-kafka.topics", usage = "kafka topics separated by ,")
     var kafka_topic_list: String = ""
-
-    @Option(name = "inputFile", usage = " for text file input")
-    var inputFile: String = "/tmp/sample.txt"
 
     @Option(name = "output", usage = "kafka, cassandra, or text")
     var output: String = "text"
