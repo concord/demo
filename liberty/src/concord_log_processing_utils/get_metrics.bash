@@ -49,9 +49,10 @@ function process_latencies() {
 }
 
 function cleanup() {
-    local compressed_file="$work_dir/run-$1-$2.tar.gz"
+    local compressed_file="run-$1-$2.tar.gz"
+    cd "$work_dir"
     tar -czf "$compressed_file" \
-	$(find "$work_dir" -iname "*.csv" -or -iname "hardware_usage_monitor.txt")
+	$(find . -iname "*.csv" -or -iname "hardware_usage_monitor.txt")
     gsutil -m cp -a public-read "$compressed_file" gs://ephemeral-public
     rm -rf "$work_dir"
 }
