@@ -8,9 +8,8 @@
 #include <algorithm>
 #include <re2/re2.h>
 
-DEFINE_string(latency_file, "", "concat all files and put them here first");
+DEFINE_string(throughput_file, "", "concat all files and put them here first");
 DEFINE_string(output_csv, "", "csv output file");
-
 
 class ThroughputLine {
   public:
@@ -51,9 +50,9 @@ int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
 
-  CHECK(!FLAGS_latency_file.empty()) << "File cannot be empty";
+  CHECK(!FLAGS_throughput_file.empty()) << "File cannot be empty";
   if(FLAGS_output_csv.empty()) {
-    FLAGS_output_csv = FLAGS_latency_file + "_out.csv";
+    FLAGS_output_csv = FLAGS_throughput_file + "_out.csv";
   }
 
   static RE2 kThroughputRegex(
@@ -65,7 +64,7 @@ int main(int argc, char *argv[]) {
 
   std::map<uint64_t, ThroughputBucket> buckets{};
 
-  std::ifstream ifl(FLAGS_latency_file);
+  std::ifstream ifl(FLAGS_throughput_file);
   CHECK(ifl) << "Couldn't open input file";
   std::ofstream ofl(FLAGS_output_csv);
   CHECK(ofl) << "Couldn't open output file";
