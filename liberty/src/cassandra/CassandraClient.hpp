@@ -66,7 +66,7 @@ class CassandraClient {
 
   /// ATM only supports (key, value) inserts
   void asyncInsert(const std::string &table,
-                   const std::string &key,
+                   const int64_t &key,
                    const std::string &value) {
     if(!connected_) {
       LOG(ERROR)
@@ -76,11 +76,12 @@ class CassandraClient {
       VLOG(0) << "asyncInsert, queue has reached capacity, draining...";
       wait();
     }
+
     const auto tableName = keyspace_ + "." + table;
     const auto query("INSERT INTO " + tableName + " (key, value) "
                      + "VALUES (?, ?);");
     auto statement = createStatement(cass_statement_new(query.c_str(), 2));
-    cass_statement_bind_string(statement.get(), 0, key.data());
+    cass_statement_bind_int64(statement.get(), 0, (cass_int64_t)key);
     cass_statement_bind_string(statement.get(), 1, value.data());
 
     futures_.emplace(cass_session_execute(session_.get(), statement.get()),
