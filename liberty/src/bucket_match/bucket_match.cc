@@ -15,7 +15,7 @@ DEFINE_int64(window_length, 1000000, "Amount of time(s) to aggregate records");
 DEFINE_int64(slide_interval, 100000, "Amount of time(s) between new windows");
 
 namespace concord {
-using ReducerType = std::map<std::string, std::string>;
+using ReducerType = std::map<int64_t, std::string>;
 
 /// SAME code as WindowedPatternMatcher, with the exception of the supertype.
 /// TODO: establish a way to abstract the similarities.
@@ -39,10 +39,12 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
       cassClient_->asyncInsert(cassandraTable_, entry.first, entry.second);
     }
     LOG(INFO) << "Window: " << window << " produced " << results.size()
-              << " unique results";
+              << " unique results out of: " << totalRecords << " total records";
+    totalRecords = 0;    
   }
 
   void reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {
+    totalRecords++;
     static const std::string kLogPattern("IRQ");
     const auto &log = b->value;
     if(log.end() != boost::algorithm::boyer_moore_search(log.begin(), log.end(),
@@ -51,7 +53,7 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
       const auto kv(buildKeyAndValue(log));
       const auto &key = std::get<0>(kv);
       const auto &value = std::get<1>(kv);
-      if(!key.empty() && !value.empty()) {
+      if(!value.empty()) {
         a[key] = value;
       }
     }
@@ -68,6 +70,7 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
         std::bind(&BucketedPatternMatcher::windowerFinished, this, _1, _2));
   }
 
+  uint64_t totalRecords{0};
   const std::string cassandraTable_;
   std::unique_ptr<CassandraClient> cassClient_;
 };
@@ -89,13 +92,13 @@ std::shared_ptr<BucketedPatternMatcher> bucketMatchFactory() {
 
 int main(int argc, char *argv[]) {
   bolt::logging::glog_init(argv[0]);
+  google::ParseCommandLineFlags(&argc, &argv, true);
   google::SetUsageMessage("Start BucketedPatternMatcher operator\n"
                           "Usage:\n"
                           "\tkafka topic\t--kafka_topic topic_name \\\n"
                           "\twindow length\t--window_length time_sec \\\n"
                           "\tslide interval\t--slide_interval time_sec \\\n"
                           "\n");
-  google::ParseCommandLineFlags(&argc, &argv, true);
   bolt::client::serveComputation(concord::bucketMatchFactory(), argc, argv);
   return 0;
 }
