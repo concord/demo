@@ -234,3 +234,14 @@ target_link_libraries (
   :libpthread.so
   re2.a
   )
+
+add_executable (
+  join_latencies_csv
+  ${PROJECT_SOURCE_DIR}/src/concord_log_processing_utils/join_latencies_csv.cc
+  )
+target_link_libraries (
+  join_latencies_csv
+  :libglog.so.0.0.0
+  :libgflags.so.2.1.0
+  :libpthread.so
+  )
