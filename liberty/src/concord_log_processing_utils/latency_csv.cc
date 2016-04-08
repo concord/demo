@@ -7,6 +7,7 @@
 #include <fstream>
 #include <algorithm>
 #include <re2/re2.h>
+#include "utils/time_utils.hpp"
 
 DEFINE_string(latency_file, "", "concat all files and put them here first");
 DEFINE_string(output_csv, "", "csv output file");
@@ -47,8 +48,8 @@ void produceCSVLines(std::ofstream &ofl,
     p50 /= t.second.latencies.size();
     p999 /= t.second.latencies.size();
 
-    ofl << t.first << "," << uint64_t(p50) << "," << uint64_t(p999)
-        << std::endl;
+    ofl << concord::timeInMillisAsIso8601(t.first) << "," << uint64_t(p50)
+        << "," << uint64_t(p999) << std::endl;
   }
 }
 

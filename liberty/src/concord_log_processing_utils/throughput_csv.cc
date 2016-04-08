@@ -7,6 +7,7 @@
 #include <fstream>
 #include <algorithm>
 #include <re2/re2.h>
+#include "utils/time_utils.hpp"
 
 DEFINE_string(throughput_file, "", "concat all files and put them here first");
 DEFINE_string(output_csv, "", "csv output file");
@@ -40,7 +41,7 @@ void produceCSVLines(std::ofstream &ofl,
     auto qps = std::accumulate(
       t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
       [](const uint64_t &acc, const ThroughputLine &l) { return acc + l.qps; });
-    ofl << t.first << "," << qps << std::endl;
+    ofl << concord::timeInMillisAsIso8601(t.first) << "," << qps << std::endl;
   }
 }
 
