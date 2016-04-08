@@ -222,3 +222,15 @@ target_link_libraries (
   :libpthread.so
   re2.a
   )
+
+add_executable (
+  hardware_csv
+  ${PROJECT_SOURCE_DIR}/src/concord_log_processing_utils/hardware_csv.cc
+  )
+target_link_libraries (
+  hardware_csv
+  :libglog.so.0.0.0
+  :libgflags.so.2.1.0
+  :libpthread.so
+  re2.a
+  )
