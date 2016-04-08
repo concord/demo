@@ -152,7 +152,7 @@ target_link_libraries (
   ${BASE_CPP_CLIENT_LIBRARIES}
   cityhash.a
   re2.a
-  uv
+  uv.a
   cassandra_static.a
   )
 
