@@ -19,14 +19,19 @@ class LatencyFileIterator {
     }
   }
   std::string nextLine() {
+    ++lines_;
     std::string ret = ",,,"; // empty csv
     if(!ifl_.eof()) {
       std::getline(ifl_, ret);
+    } else {
+      LOG(INFO) << "Got eof for file: " << filename_
+                << " produced lines: " << lines_;
     }
     return ret;
   }
 
   private:
+  uint32_t lines_{0};
   std::string filename_;
   std::ifstream ifl_;
 };
@@ -83,10 +88,10 @@ int main(int argc, char *argv[]) {
       }
       ofl << tmp;
     }
-    ofl << std::endl;
     if(lines <= 0) {
       break;
     }
+    ofl << std::endl;
   }
 
   return 0;
