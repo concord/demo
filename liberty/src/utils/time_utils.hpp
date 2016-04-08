@@ -31,4 +31,18 @@ std::string timeInMillisAsIso8601(uint64_t ms) {
          + std::to_string(time_struct->tm_min) + ":"
          + std::to_string(time_struct->tm_sec);
 }
+
+
+std::string excelTime(uint64_t ms) {
+  time_t seconds = static_cast<time_t>(ms / 1000);
+  //const struct tm *const time_struct = gmtime(&seconds);
+  const struct tm *const time_struct = localtime(&seconds);
+  // YYYY-MM-DDThh:mm:ss
+  return std::to_string(time_struct->tm_year + 1900) + "-"
+         + std::to_string(time_struct->tm_mon + 1) + "-"
+         + std::to_string(time_struct->tm_mday) + ","
+         + std::to_string(time_struct->tm_hour + 1) + ":"
+         + std::to_string(time_struct->tm_min) + ":"
+         + std::to_string(time_struct->tm_sec);
+}
 }

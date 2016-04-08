@@ -37,7 +37,7 @@ void addLatencyLine(std::map<uint64_t, LatencyBucket> &buckets,
 void produceCSVLines(std::ofstream &ofl,
                      const std::map<uint64_t, LatencyBucket> &buckets) {
 
-  ofl << "time,p50,p999" << std::endl;
+  ofl << "date,time,p50,p999" << std::endl;
   for(const auto &t : buckets) {
     double p50 = std::accumulate(
       t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
@@ -48,8 +48,8 @@ void produceCSVLines(std::ofstream &ofl,
     p50 /= t.second.latencies.size();
     p999 /= t.second.latencies.size();
 
-    ofl << concord::timeInMillisAsIso8601(t.first) << "," << uint64_t(p50)
-        << "," << uint64_t(p999) << std::endl;
+    ofl << concord::excelTime(t.first) << "," << uint64_t(p50) << ","
+        << uint64_t(p999) << std::endl;
   }
 }
 

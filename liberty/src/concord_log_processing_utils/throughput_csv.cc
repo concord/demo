@@ -36,12 +36,12 @@ void addThroughputLine(std::map<uint64_t, ThroughputBucket> &buckets,
 void produceCSVLines(std::ofstream &ofl,
                      const std::map<uint64_t, ThroughputBucket> &buckets) {
 
-  ofl << "time,qps" << std::endl;
+  ofl << "date,time,qps" << std::endl;
   for(const auto &t : buckets) {
     auto qps = std::accumulate(
       t.second.latencies.begin(), t.second.latencies.end(), uint64_t(0),
       [](const uint64_t &acc, const ThroughputLine &l) { return acc + l.qps; });
-    ofl << concord::timeInMillisAsIso8601(t.first) << "," << qps << std::endl;
+    ofl << concord::excelTime(t.first) << "," << qps << std::endl;
   }
 }
 
