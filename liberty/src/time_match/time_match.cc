@@ -15,7 +15,7 @@ DEFINE_int64(window_length, 10, "Amount of time(s) to aggregate records");
 DEFINE_int64(slide_interval, 10, "Amount of time(s) between new windows");
 
 namespace concord {
-using ReducerType = std::map<std::string, std::string>;
+using ReducerType = std::map<int64_t, std::string>;
 
 class WindowedPatternMatcher : public TimeWindow<ReducerType> {
   public:
@@ -49,7 +49,7 @@ class WindowedPatternMatcher : public TimeWindow<ReducerType> {
       const auto kv(buildKeyAndValue(log));
       const auto &key = std::get<0>(kv);
       const auto &value = std::get<1>(kv);
-      if(!key.empty() && !value.empty()) {
+      if(!value.empty()) {
         a[key] = value;
       }
     }

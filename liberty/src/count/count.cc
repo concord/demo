@@ -42,7 +42,7 @@ class LogCounter final : public bolt::Computation {
                                "\\s\\d+\\s\\d+:\\d+:\\d+\\s\\S+\\s(.*)$");
     int year, month;
     std::string log;
-    if(RE2::FullMatch(r.key, simpleDateRegex, &year, &month, &log)) {
+    if(RE2::FullMatch(r.value, simpleDateRegex, &year, &month, &log)) {
       if(data_.find(month) == data_.end()) {
         data_[month].emplace(year, kHllRegisterSize);
       } else {
@@ -50,7 +50,7 @@ class LogCounter final : public bolt::Computation {
         if(yearMap.find(year) == yearMap.end()) {
           yearMap.emplace(year, kHllRegisterSize);
         } else {
-          data_[month][year].add(r.key.c_str(), r.key.size());
+          data_[month][year].add(r.value.c_str(), r.value.size());
         }
       }
     }

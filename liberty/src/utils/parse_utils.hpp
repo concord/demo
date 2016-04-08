@@ -4,7 +4,7 @@
 #include <concord/time_utils.hpp>
 
 namespace concord {
-using LogTuple = std::tuple<std::string, std::string>;
+using LogTuple = std::tuple<int64_t, std::string>;
 
 LogTuple buildKeyAndValue(const std::string &log) {
   // Current timestamp in ISO-8601 format
@@ -14,12 +14,12 @@ LogTuple buildKeyAndValue(const std::string &log) {
   // The line’s log payload
   static const RE2 valueRegex(
     "-\\s(\\d+)(?:\\s\\S+){5}\\s(\\w+)(.)(\\w+)\\s(.*)$");
-  int timestamp; // value is in seconds
+  int key, timestamp; // value is in seconds
   char nodeChar;
-  std::string username, nodename, msg, key, value;
+  std::string username, nodename, msg, value;
   if(RE2::FullMatch(log, valueRegex, &timestamp, &username, &nodeChar,
                     &nodename, &msg)) {
-    key = CityHash64(log.data(), log.size()) + timestamp;
+    key = static_cast<int64_t>(CityHash64(log.data(), log.size()) + timestamp);
     value = bolt::timeInMillisAsIso8601(bolt::timeNowMilli()) + ":"
             + std::to_string(timestamp * 1000) + ":" + username + nodeChar
             + nodename + ":" + msg;

@@ -55,7 +55,7 @@ class PatternMatcher : public bolt::Computation {
       const auto kv(buildKeyAndValue(log));
       const auto &key = std::get<0>(kv);
       const auto &value = std::get<1>(kv);
-      if(!key.empty() && !value.empty()) {
+      if(!value.empty()) {
         cassClient_->asyncInsert(cassandraTable_, key, value);
       }
     }
