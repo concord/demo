@@ -24,7 +24,7 @@ import re
 # Use PERMIT_FILES unless user supplied regex was given
 # Group output by node ip
 
-DATA_DIR = './mesos-run-data'
+DATA_DIR = 'mesos-run-data'
 PERMIT_FILES = [ 'incoming_throughput', 'outgoing_throughput',
                  'hardware_usage_monitor' 'principal_latencies',
                  'dispatcher_latencies', 'stderr', 'stdout', '.INFO' ]
@@ -44,6 +44,7 @@ def generate_options():
     parser.add_argument('-e','--executor_ids', nargs='+',
                         help='11260583907712781801-unique, ...')
     parser.add_argument('-r', '--regex', action="store", help='*.txt')
+    parser.add_argument('-o', '--output', action="store", help='/tmp')
     return parser
 
 def mesos_http_req(addr, endpoint, isJson=True):
@@ -140,10 +141,11 @@ def main():
     executor_ids = fetch_current_tasks(options.master) if options.executor_ids is None else options.executor_ids
     locations = locate_data(get_slave_info(options.master),
                             executor_ids, options.regex)
-    if os.path.exists(DATA_DIR):
-        shutil.rmtree(DATA_DIR)
-    os.makedirs(DATA_DIR)
-    os.chdir(DATA_DIR)
+    save_dir = './' + DATA_DIR if options.output == None else options.output
+    if os.path.exists(save_dir):
+        shutil.rmtree(save_dir)
+    os.makedirs(save_dir)
+    os.chdir(save_dir)
     download_data(locations)
 
 if __name__ == "__main__":
