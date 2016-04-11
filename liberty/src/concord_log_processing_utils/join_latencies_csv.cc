@@ -50,7 +50,9 @@ int main(int argc, char *argv[]) {
   folly::split(",", FLAGS_latency_files, files);
   std::vector<LatencyFileIterator> itrs{};
   for(auto &f : files) {
-    itrs.emplace_back(f);
+    if(!f.empty()) {
+      itrs.emplace_back(f);
+    }
   }
   std::ofstream ofl(FLAGS_output_csv);
   if(ofl.fail()) {
