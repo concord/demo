@@ -35,7 +35,8 @@ function process_latencies() {
 	    for dir in $(ls "${slave_dir}"); do
 		dir="$slave_dir/$dir"
 		if [[ -d "${dir}" ]]; then
-		    find "$dir" -iname "*.txt" -exec cat {} >> "$dir/latency.agg" \;
+                    find "$dir" -iname "*latencies*.txt" \
+                         -exec cat {} >> "$dir/latency.agg" \;
 		    $git_root/liberty/build/latency_csv \
 			--latency_file "$dir/latency.agg" \
 			--output_csv "$dir/latency.csv" \
@@ -60,4 +61,3 @@ function cleanup() {
 process_latencies
 process_throughput
 cleanup $2 $3
-
