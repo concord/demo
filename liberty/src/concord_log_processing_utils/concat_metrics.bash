@@ -2,8 +2,8 @@
 set -ex
 git_root=$(git rev-parse --show-toplevel)
 
-# targets="$(gsutil ls gs://ephemeral-public/pre_processed_files/run*.tar.gz)"
-targets=(run-1-bucket-match.tar.gz)
+targets="$(gsutil ls gs://ephemeral-public/pre_processed_files/run*.tar.gz)"
+#targets=(run-1-bucket-match.tar.gz)
 
 
 join_csv=$git_root/liberty/build/join_csv
@@ -85,11 +85,11 @@ for target in ${targets[@]}; do
     work_dir=$(mktemp -d)
     cd $work_dir
     echo "Downloading $target"
-    gsutil -m cp -r "gs://ephemeral-public/pre_processed_files/$target" "$work_dir"
-    tar -xzf "$work_dir/$target" -C "$work_dir"
+    gsutil -m cp $target "$work_dir"
+    tar -xzf $work_dir/$(basename $target) -C "$work_dir"
     process_latencies $work_dir
     process_throughput $work_dir
     process_hardware $work_dir
     aggregate $work_dir
-    gsutil -m cp "$work_dir/aggregates.csv" "gs://ephemeral-public/pre_processed_files/${target}_aggregates.csv"
+    gsutil -m cp "$work_dir/aggregates.csv" "${target}_aggregates.csv"
 done
