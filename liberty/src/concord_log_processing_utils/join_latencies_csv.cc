@@ -29,6 +29,7 @@ class FileIterator {
     if(!ifl_.eof()) {
       std::getline(ifl_, ret);
     }
+    ret.erase(ret.find_last_not_of(" \n\r\t") + 1);
     if(ret.empty()) {
       return delimiter();
     }
