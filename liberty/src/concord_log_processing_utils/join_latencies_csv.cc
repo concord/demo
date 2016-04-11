@@ -20,6 +20,7 @@ class FileIterator {
       LOG(FATAL) << "File " << filename_ << ", failed to open";
     }
   }
+  const std::string &fileName() const { return filename_; }
   virtual const std::string &delimiter() const = 0;
   virtual const std::string header() const = 0;
   std::string nextLine() {
@@ -50,6 +51,9 @@ class LatencyFileIterator : public FileIterator {
   }
   virtual const std::string header() const override {
     auto f = filename_;
+    if(f.size() > 25) {
+      f = f.substr(f.size() - 25, 21);
+    }
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
@@ -68,6 +72,9 @@ class HardwareFileIterator : public FileIterator {
   }
   virtual const std::string header() const override {
     auto f = filename_;
+    if(f.size() > 25) {
+      f = f.substr(f.size() - 25, 21);
+    }
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
@@ -116,6 +123,7 @@ int main(int argc, char *argv[]) {
     if(i != 0) {
       ofl << ",";
     }
+    LOG(INFO) << it->fileName() << " -> " << it->header();
     ofl << it->header();
   }
   // add new line after header
