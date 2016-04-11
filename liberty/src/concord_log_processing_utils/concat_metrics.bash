@@ -91,5 +91,5 @@ for target in ${targets[@]}; do
     process_throughput $work_dir
     process_hardware $work_dir
     aggregate $work_dir
-    gsutil -m cp "$work_dir/aggregates.csv" "${target}_aggregates.csv"
+    gsutil -m cp -a public-read "$work_dir/aggregates.csv" "${target}_aggregates.csv"
 done
