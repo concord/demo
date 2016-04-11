@@ -51,7 +51,7 @@ class LatencyFileIterator : public FileIterator {
     return kDelimiter;
   }
   virtual const std::string header() const override {
-    auto f = filename_;
+    auto f = "latency_" + filename_;
     if(f.size() > 25) {
       f = f.substr(f.size() - 25, 21);
     }
@@ -68,11 +68,11 @@ class HardwareFileIterator : public FileIterator {
   public:
   HardwareFileIterator(std::string filename) : FileIterator(filename) {}
   virtual const std::string &delimiter() const override {
-    static const std::string kDelimiter = ",,,,,,";
+    static const std::string kDelimiter = ",,,,,";
     return kDelimiter;
   }
   virtual const std::string header() const override {
-    auto f = filename_;
+    auto f = "hardware_" + filename_;
     if(f.size() > 25) {
       f = f.substr(f.size() - 25, 21);
     }
