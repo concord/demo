@@ -7,7 +7,8 @@
 
 DEFINE_string(latency_files, "", "coma delimited list of files");
 DEFINE_string(hardware_files, "", "coma delimited list of files");
-DEFINE_string(output_csv, "latency_hardware_aggregate.csv", "csv output file");
+DEFINE_string(throughput_files, "", "coma delimited list of files");
+DEFINE_string(output_csv, "aggregates.csv", "csv output file");
 
 
 class FileIterator {
@@ -87,6 +88,30 @@ class HardwareFileIterator : public FileIterator {
   }
 };
 
+class ThroughputFileIterator : public FileIterator {
+  public:
+  ThroughputFileIterator(std::string filename) : FileIterator(filename) {}
+  virtual const std::string &delimiter() const override {
+    static const std::string kDelimiter = ",,,";
+    return kDelimiter;
+  }
+  virtual const std::string header() const override {
+    auto f = filename_;
+    if(f.size() > 35) {
+      f = f.substr(f.size() - 35, 30);
+    }
+    for(auto j = 0u; j < f.size(); ++j) {
+      if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
+        f[j] = '_';
+      }
+    }
+    while(!f.empty() && f[0] == '_') {
+      f = f.substr(1);
+    }
+    return f + "_date," + f + "_time," + f + "_qps";
+  }
+};
+
 
 std::vector<std::string> split_files(const std::string &line) {
   std::vector<std::string> out{};
@@ -100,23 +125,31 @@ int main(int argc, char *argv[]) {
   google::InstallFailureSignalHandler();
   LOG_IF(WARNING, FLAGS_latency_files.empty()) << "No latency files to process";
   LOG_IF(WARNING, FLAGS_hardware_files.empty()) << "cannot be empty";
+  LOG_IF(WARNING, FLAGS_throughput_files.empty()) << "cannot be empty";
 
-  std::vector<std::string> latencyFileNames = split_files(FLAGS_latency_files);
-  std::vector<std::string> hardwareFileNames =
-    split_files(FLAGS_hardware_files);
+  std::vector<std::string> latencyFiles = split_files(FLAGS_latency_files);
+  std::vector<std::string> hardwareFiles = split_files(FLAGS_hardware_files);
+  std::vector<std::string> throughputFiles =
+    split_files(FLAGS_throughput_files);
 
   std::vector<std::unique_ptr<FileIterator>> itrs{};
 
-  for(auto &f : latencyFileNames) {
+  for(auto &f : latencyFiles) {
     LOG(INFO) << "Adding latency file: " << f;
     auto it = std::make_unique<LatencyFileIterator>(f);
     itrs.push_back(std::move(it));
   }
-  for(auto &f : hardwareFileNames) {
+  for(auto &f : hardwareFiles) {
     LOG(INFO) << "Adding hardware file: " << f;
     auto it = std::make_unique<HardwareFileIterator>(f);
     itrs.push_back(std::move(it));
   }
+  for(auto &f : throughputFiles) {
+    LOG(INFO) << "Adding throughput file: " << f;
+    auto it = std::make_unique<ThroughputFileIterator>(f);
+    itrs.push_back(std::move(it));
+  }
+
   LOG(INFO) << "Processing " << itrs.size() << " files";
 
   std::ofstream ofl(FLAGS_output_csv);
