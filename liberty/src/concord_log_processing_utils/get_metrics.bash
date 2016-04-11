@@ -16,7 +16,7 @@ function process_throughput() {
     for slave_dir in $(ls "$work_dir"); do
 	slave_dir="$work_dir/$slave_dir"
 	if [[ -d "$slave_dir" ]]; then
-	    find "$slave_dir" -iname "*thoughput.txt" -exec \
+	    find "$slave_dir" -iname "*throughput.txt" -exec \
 		 cat {} >> "$slave_dir/throughput.agg" \;
 	    $git_root/liberty/build/throughput_csv \
 		--throughput_file "$slave_dir/throughput.agg" \
