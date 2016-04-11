@@ -244,4 +244,5 @@ target_link_libraries (
   :libglog.so.0.0.0
   :libgflags.so.2.1.0
   :libpthread.so
+  folly.a
   )
