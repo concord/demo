@@ -92,7 +92,7 @@ class ThroughputFileIterator : public FileIterator {
   public:
   ThroughputFileIterator(std::string filename) : FileIterator(filename) {}
   virtual const std::string &delimiter() const override {
-    static const std::string kDelimiter = ",,,";
+    static const std::string kDelimiter = ",,";
     return kDelimiter;
   }
   virtual const std::string header() const override {
