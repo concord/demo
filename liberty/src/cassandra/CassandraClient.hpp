@@ -69,11 +69,10 @@ class CassandraClient {
                    const int64_t &key,
                    const std::string &value) {
     if(!connected_) {
-      LOG(ERROR)
+      LOG(FATAL)
         << "asyncInsert failed, establish connection to cassandra first";
-      return;
     } else if(futures_.size() > kMaxNumQueuedFutures) {
-      VLOG(0) << "asyncInsert, queue has reached capacity, draining...";
+      VLOG(1) << "asyncInsert, queue has reached capacity, draining...";
       wait();
     }
 
