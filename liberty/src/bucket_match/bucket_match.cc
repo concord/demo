@@ -11,7 +11,7 @@ DEFINE_string(kafka_topic, "", "Kafka topic that consumer is reading from");
 DEFINE_string(cassandra_nodes, "127.0.0.1", "Cassandra endpoints");
 DEFINE_string(cassandra_keyspace, "", "Cassandra keyspace");
 DEFINE_string(cassandra_table, "irq", "Cassandra table name");
-DEFINE_int64(window_length, 1000000, "Amount of time(s) to aggregate records");
+DEFINE_int64(window_length, 100000, "Amount of time(s) to aggregate records");
 DEFINE_int64(slide_interval, 100000, "Amount of time(s) between new windows");
 
 namespace concord {
@@ -40,7 +40,7 @@ class BucketedPatternMatcher : public CountWindow<ReducerType> {
     }
     LOG(INFO) << "Window: " << window << " produced " << results.size()
               << " unique results out of: " << totalRecords << " total records";
-    totalRecords = 0;    
+    totalRecords = 0;
   }
 
   void reduceEvents(ReducerType &a, const bolt::FrameworkRecord *b) {

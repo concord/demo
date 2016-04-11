@@ -28,7 +28,7 @@ std::shared_ptr<CountWindow<ReducerType>> bucketCountFactory() {
       .setWindowerResultFunction(windowerFinished)
       .setReducerFunction([](ReducerType &a, const bolt::FrameworkRecord *b) {
         gTotalRecords++;
-        a.insert(b->key);
+        a.insert(b->value);
       });
   return std::make_shared<CountWindow<ReducerType>>(opts);
 }
