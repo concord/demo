@@ -7,7 +7,7 @@
 
 DEFINE_string(latency_files, "", "coma delimited list of files");
 DEFINE_string(hardware_files, "", "coma delimited list of files");
-DEFINE_string(output_csv, "latency_aggregate.csv", "csv output file");
+DEFINE_string(output_csv, "latency_hardware_aggregate.csv", "csv output file");
 
 
 class FileIterator {
@@ -25,15 +25,15 @@ class FileIterator {
   virtual const std::string header() const = 0;
   std::string nextLine() {
     ++lines_;
-    std::string ret = ""; // empty csv
     if(!ifl_.eof()) {
+      std::string ret = ""; // empty csv
       std::getline(ifl_, ret);
+      ret.erase(ret.find_last_not_of(" \n\r\t") + 1);
+      if(!ret.empty()) {
+        return ret;
+      }
     }
-    ret.erase(ret.find_last_not_of(" \n\r\t") + 1);
-    if(ret.empty()) {
-      return delimiter();
-    }
-    return ret;
+    return delimiter();
   }
 
   protected:
@@ -51,10 +51,11 @@ class LatencyFileIterator : public FileIterator {
     return kDelimiter;
   }
   virtual const std::string header() const override {
-    auto f = "latency_" + filename_;
+    auto f = filename_;
     if(f.size() > 25) {
       f = f.substr(f.size() - 25, 21);
     }
+    f = "latency_" + f;
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
@@ -68,14 +69,15 @@ class HardwareFileIterator : public FileIterator {
   public:
   HardwareFileIterator(std::string filename) : FileIterator(filename) {}
   virtual const std::string &delimiter() const override {
-    static const std::string kDelimiter = ",,,,,";
+    static const std::string kDelimiter = ",,,,,,";
     return kDelimiter;
   }
   virtual const std::string header() const override {
-    auto f = "hardware_" + filename_;
+    auto f = filename_;
     if(f.size() > 25) {
       f = f.substr(f.size() - 25, 21);
     }
+    f = "hardware_" + f;
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
@@ -97,8 +99,8 @@ int main(int argc, char *argv[]) {
   google::ParseCommandLineFlags(&argc, &argv, true);
   google::InitGoogleLogging(argv[0]);
   google::InstallFailureSignalHandler();
-  CHECK(!FLAGS_latency_files.empty() || !FLAGS_hardware_files.empty())
-    << "cannot be empty";
+  LOG_IF(WARNING, FLAGS_latency_files.empty()) << "No latency files to process";
+  LOG_IF(WARNING, FLAGS_hardware_files.empty()) << "cannot be empty";
 
   std::vector<std::string> latencyFileNames = split_files(FLAGS_latency_files);
   std::vector<std::string> hardwareFileNames =
@@ -107,13 +109,17 @@ int main(int argc, char *argv[]) {
   std::vector<std::unique_ptr<FileIterator>> itrs{};
 
   for(auto &f : latencyFileNames) {
+    LOG(INFO) << "Adding latency file: " << f;
     auto it = std::make_unique<LatencyFileIterator>(f);
     itrs.push_back(std::move(it));
   }
   for(auto &f : hardwareFileNames) {
+    LOG(INFO) << "Adding hardware file: " << f;
     auto it = std::make_unique<HardwareFileIterator>(f);
     itrs.push_back(std::move(it));
   }
+  LOG(INFO) << "Processing " << itrs.size() << " files";
+
   std::ofstream ofl(FLAGS_output_csv);
   if(ofl.fail()) {
     ofl.clear();
@@ -124,7 +130,6 @@ int main(int argc, char *argv[]) {
     if(i != 0) {
       ofl << ",";
     }
-    LOG(INFO) << it->fileName() << " -> " << it->header();
     ofl << it->header();
   }
   // add new line after header
@@ -134,9 +139,8 @@ int main(int argc, char *argv[]) {
     i->nextLine();
   }
 
-  auto lines = 0u;
   while(true) {
-    lines = itrs.size() - 1;
+    int64_t lines = itrs.size() - 1;
     for(auto i = 0u; i < itrs.size(); ++i) {
       auto &it = itrs[i];
       auto tmp = std::move(it->nextLine());
@@ -149,6 +153,7 @@ int main(int argc, char *argv[]) {
       ofl << tmp;
     }
     if(lines <= 0) {
+      LOG(INFO) << "Finished processing";
       break;
     }
     ofl << std::endl;
