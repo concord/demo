@@ -8,7 +8,7 @@
     dest='{{goobly_cache_dir}}/librdkafka'
     update=yes
     recursive=yes
-    version='a7424f8'
+    version='763b522'
     force=yes
 
 - shell:
