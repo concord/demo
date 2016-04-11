@@ -52,14 +52,13 @@ class LatencyFileIterator : public FileIterator {
   }
   virtual const std::string header() const override {
     auto f = filename_;
-    if(f.size() > 25) {
-      f = f.substr(f.size() - 25, 21);
-    }
-    f = "latency_" + f;
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
       }
+    }
+    while(!f.empty() && f[0] == '_') {
+      f = f.substr(1);
     }
     return f + "_date," + f + "_time," + f + "_p50," + f + "_p999";
   }
@@ -74,14 +73,13 @@ class HardwareFileIterator : public FileIterator {
   }
   virtual const std::string header() const override {
     auto f = filename_;
-    if(f.size() > 25) {
-      f = f.substr(f.size() - 25, 21);
-    }
-    f = "hardware_" + f;
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
       }
+    }
+    while(!f.empty() && f[0] == '_') {
+      f = f.substr(1);
     }
     return f + "_date," + f + "_time," + f + "_1min," + f + "_5min," + f
            + "_free_mem_gb," + f + "_used_mem_gb," + f + "_percentage_used";
@@ -97,9 +95,6 @@ class ThroughputFileIterator : public FileIterator {
   }
   virtual const std::string header() const override {
     auto f = filename_;
-    if(f.size() > 35) {
-      f = f.substr(f.size() - 35, 30);
-    }
     for(auto j = 0u; j < f.size(); ++j) {
       if(f[j] == ':' || f[j] == '/' || f[j] == '.' || f[j] == '-') {
         f[j] = '_';
