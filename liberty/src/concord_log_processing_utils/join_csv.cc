@@ -43,8 +43,6 @@ class FileIterator {
       }
       if(basename_.empty()) {
         basename_ = filename_;
-      } else {
-        basename_ += "_";
       }
       auto &f = basename_;
       for(auto j = 0u; j < f.size(); ++j) {
