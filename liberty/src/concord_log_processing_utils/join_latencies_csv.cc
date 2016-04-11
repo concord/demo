@@ -133,8 +133,9 @@ int main(int argc, char *argv[]) {
     i->nextLine();
   }
 
-  auto lines = itrs.size();
+  auto lines = 0u;
   while(true) {
+    lines = itrs.size() - 1;
     for(auto i = 0u; i < itrs.size(); ++i) {
       auto &it = itrs[i];
       auto tmp = std::move(it->nextLine());
