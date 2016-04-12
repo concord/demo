@@ -71,13 +71,13 @@ def get_slave_info(master_addr):
     return mesos_http_req(master_addr, "/slaves")
 
 def get_slave_data(slave_addr):
-    return mesos_http_req(slave_addr, "/files/debug")
+    return mesos_http_req(slave_addr, "/files/debug.json")
 
 def get_slave_browse(slave_addr, path):
-    return mesos_http_req(slave_addr, "/files/browse?path=" + path)
+    return mesos_http_req(slave_addr, "/files/browse.json?path=" + path)
 
 def get_slave_file(slave_addr, path):
-    return mesos_http_req(slave_addr, "/files/download?path=" + path, False)
+    return mesos_http_req(slave_addr, "/files/download.json?path=" + path, False)
 
 def get_file_paths(sandbox, executor_ids):
     res = []
@@ -108,10 +108,14 @@ def locate_data(slaves, executor_ids, regex=None):
         hostname = slave['hostname'] + ":5051"
         slave_id = slave['id']
         sandbox = get_slave_data(hostname)
-        paths = get_file_paths(sandbox, executor_ids)
-        if len(paths) > 0:
-            data[hostname] = map(lambda x: (x[0], expand(hostname, x[1], regex))
-                                 , paths)
+        if sandbox is not None:
+            paths = get_file_paths(sandbox, executor_ids)
+            if len(paths) > 0:
+                data[hostname] = map(lambda x: (x[0], expand(hostname, x[1], regex))
+                                    , paths)
+        else:
+            print "Sandbox is empty"
+            print "Slave: ", slave
     return data
 
 def download_data(data):
@@ -129,9 +133,14 @@ def download_data(data):
                 print "... => Downloading %s from slave %s" % (filename, slave_addr)
                 with open(filename, 'a') as fileh:
                     fileh.write(get_slave_file(slave_addr, mesosfile))
+    if len(data) == 0:
+        print "No matching data exists on given mesos cluster"
 
 def fetch_current_tasks(master_addr):
     tasks = get_master_tasks(master_addr)['tasks']
+    if tasks == None:
+        print "No tasks returned from the master"
+        sys.exit(1)
     running = filter(lambda x: x['state'] == 'TASK_RUNNING', tasks)
     return map(lambda x: x['id'], running)
 
