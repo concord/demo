@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+MASTER=104.197.44.86
+SLAVES="104.154.100.212 23.236.57.69 104.154.116.115 130.211.154.171 104.197.164.138"
+
+TARBALL=flink-1.0.1-bin-hadoop27-scala_2.11.tgz
+TARGET_DIR=/home/fanatoly
+INSTALL_DIR=$TARGET_DIR/flink-1.0.1
