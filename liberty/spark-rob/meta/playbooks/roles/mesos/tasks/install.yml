@@ -1,0 +1,23 @@
+---
+- name: Add PPA Key
+  apt_key: id=E56151BF keyserver=keyserver.ubuntu.com state=present
+  sudo: yes
+
+- name: Add PPA
+  apt_repository: repo='deb http://repos.mesosphere.io/ubuntu trusty main'
+                  state=present update_cache=yes
+
+- name: Install mesos
+  apt: name=mesos={{mesos_version}}-1.0.ubuntu{{ansible_distribution_version.split('.')|join('')}} state=present
+
+- name: Disable mesos-slave
+  lineinfile: dest=/etc/init/mesos-slave.override line=manual state=present create=yes
+  notify:
+    - Stop mesos-slave
+  when: mesos_role == 'master'
+
+- name: Disable mesos-master
+  lineinfile: dest=/etc/init/mesos-master.override line=manual state=present create=yes
+  notify:
+    - Stop mesos-master
+  when: mesos_role == 'slave'

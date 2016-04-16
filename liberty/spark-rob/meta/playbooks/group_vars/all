@@ -1,0 +1,4 @@
+---
+spark_env_extras:
+  MESOS_NATIVE_JAVA_LIBRARY: /usr/lib/libmesos.so
+  SPARK_LOCAL_IP: "{{ ansible_default_ipv4.address }}"

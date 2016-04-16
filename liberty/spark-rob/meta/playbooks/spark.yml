@@ -1,0 +1,22 @@
+---
+- name: Install zookeeper 
+  hosts:
+    - zookeepers
+  roles:
+    - zookeeper
+
+- name: Install apache mesos && apache spark
+  hosts:
+    - mesos_masters
+    - mesos_slaves
+  roles:
+    - mesos
+    - java
+    - spark
+
+- name: Install kafka on kafka nodes
+  hosts:
+    - kafka_nodes
+  roles:
+    - java
+    - kafka
