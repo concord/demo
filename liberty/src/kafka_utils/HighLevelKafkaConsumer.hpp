@@ -105,8 +105,12 @@ class HighLevelKafkaConsumer : public RdKafka::EventCb,
       {"receive.message.max.bytes", "100000000"}, // Max receive buff or 100MB
       {"fetch.message.max.bytes", "20000"},       // Some smmalller default
       {"statistics.interval.ms", "60000"},        // every minute
-      {"debug", FLAGS_kafka_consumer_debug}       // just set the default opts
+
     };
+
+    if(!FLAGS_kafka_consumer_debug.empty()) {
+      defaultOpts.insert({"debug", FLAGS_kafka_consumer_debug});
+    }
 
     for(auto &t : opts) {
       if(defaultOpts.find(t.first) == defaultOpts.end()) {

@@ -11,8 +11,8 @@ DEFINE_string(kafka_topic, "", "Kafka topic that consumer is reading from");
 DEFINE_string(cassandra_nodes, "127.0.0.1", "Cassandra endpoints");
 DEFINE_string(cassandra_keyspace, "", "Cassandra keyspace");
 DEFINE_string(cassandra_table, "irq", "Cassandra table name");
-DEFINE_int64(window_length, 100000, "Amount of time(s) to aggregate records");
-DEFINE_int64(slide_interval, 100000, "Amount of time(s) between new windows");
+DEFINE_int64(window_length, 100000, "# of records to aggregate records");
+DEFINE_int64(slide_interval, 100000, "# of records between new windows");
 
 namespace concord {
 using ReducerType = std::map<int64_t, std::string>;
