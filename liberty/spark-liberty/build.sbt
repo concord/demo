@@ -1,7 +1,12 @@
-name := "spark"
+name := "spark-benchmark"
+
 organization:= "concordsystems"
-version := "0.1"
-scalaVersion := "2.11.8"
+
+version := "0.0.1"
+
+scalaVersion := "2.10.5"
+
+scalacOptions ++= Seq("-feature", "-language:higherKinds")
 
 resolvers ++= Seq(
   "Clojars" at "https://clojars.org/repo/",
@@ -12,10 +17,13 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" % "spark-core_2.11" % "1.6.1",
-  "org.apache.spark" % "spark-streaming_2.11" % "1.6.1",
-  "org.apache.spark" % "spark-streaming-kafka_2.11" % "1.6.1",
-  "args4j" % "args4j" % "2.33"
+  "org.apache.spark" % "spark-core_2.10" % "1.6.1" % "provided",
+  "org.apache.spark" % "spark-streaming_2.10" % "1.6.1" % "provided",
+  "org.apache.spark" % "spark-streaming-kafka_2.10" % "1.6.1",
+  "args4j" % "args4j" % "2.33",
+  "com.twitter" % "algebird-core_2.10" % "0.11.0",
+  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1",
+  "org.apache.spark" % "spark-sql_2.10" % "1.6.1"
 )
 
 mergeStrategy in assembly := {
