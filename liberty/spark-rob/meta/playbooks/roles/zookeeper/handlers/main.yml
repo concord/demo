@@ -1,6 +1,0 @@
----
-
-# handlers make sure zookeeper has started
-- name: restart zookeeper
-  sudo: yes
-  service: name=zookeeper state=restarted
