@@ -1,3 +1,0 @@
----
-kafka_auto_create_topics: 'true'
-kafka_zookeeper_chroot: "kafka"

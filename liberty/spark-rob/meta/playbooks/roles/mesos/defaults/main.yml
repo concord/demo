@@ -1,4 +1,0 @@
----
-mesos_containerizers: docker,mesos
-mesos_version: 0.23.0
-run_mode: "Configure"
