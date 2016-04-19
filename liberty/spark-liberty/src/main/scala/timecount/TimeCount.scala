@@ -45,9 +45,5 @@ object TimeCountBenchmark extends App {
   new TimeCountBenchmark(
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
-<<<<<<< Updated upstream
-  )
-=======
   ).start
->>>>>>> Stashed changes
 }

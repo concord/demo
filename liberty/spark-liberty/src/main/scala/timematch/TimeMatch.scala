@@ -15,9 +15,9 @@ class TimeMatchBenchmark(
   keyspace: String,
   tableName: String,
   cassandraHosts: String,
-  brokers: String,
-  topics: Set[String])
-    extends BenchmarkStreamContext(brokers, topics) {
+  override val brokers: String,
+  override val topics: Set[String])
+    extends BenchmarkStreamContext {
   /** Add additional cassandra param field to superclass configurations params */
   sparkConf.set("spark.cassandra.connection.host", cassandraHosts)
 

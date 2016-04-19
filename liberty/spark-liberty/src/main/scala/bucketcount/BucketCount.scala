@@ -6,8 +6,9 @@ import com.concord.utils.SparkArgHelper
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream._
 
-class BucketCountBenchmark(brokers: String, topics: Set[String])
-    extends BenchmarkStreamContext(brokers, topics) {
+class BucketCountBenchmark(
+  override val brokers: String, override val  topics: Set[String])
+    extends BenchmarkStreamContext {
   /** Local constants */
   private val windowLimit: Int = 100000
   private val windowInterval: Int = 100000
@@ -25,5 +26,5 @@ object BucketCountBenchmark extends App {
   new BucketCountBenchmark(
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
-  )
+  ).start
 }
