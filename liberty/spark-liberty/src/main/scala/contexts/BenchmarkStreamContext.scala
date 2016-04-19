@@ -36,6 +36,7 @@ trait BenchmarkStreamContext {
     .setAppName(applicationName)
     .set("spark.mesos.executor.home", "/usr/lib/spark")
     .set("spark.default.parallelism", "120")
+    //.set("spark.streaming.backpressure.enabled", "true") // Throttle rate
     .set("spark.streaming.kafka.maxRatePerPartition", streamingRate.toString)
 
   private lazy val ssc = new StreamingContext(sparkConf, batchInterval)
@@ -52,7 +53,6 @@ trait BenchmarkStreamContext {
   def batchInterval: Duration = ???
   def applicationName: String = ???
   def streamLogic: Unit = ???
-
   def start(): Unit = {
     BenchmarkStreamContext.setStreamingLogLevels()
     streamLogic

@@ -2,6 +2,7 @@ package com.concord.count
 
 import com.concord.contexts.BenchmarkStreamContext
 import com.concord.utils.SimpleDateParser
+import com.concord.utils.SparkArgHelper
 
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream._
@@ -9,6 +10,10 @@ import org.apache.spark.rdd.RDD
 
 import com.twitter.algebird.HyperLogLogMonoid
 import com.twitter.algebird.HLL
+
+// class SHLL extends HLL with Serializable {
+//   override def toString = toBytes(this)
+// }
 
 /** Implement a computation that consumes a kafka topic and estimated
   * all unique space delimited strings grouped by month and year
@@ -44,21 +49,14 @@ class CountBenchmark(
     val estCounts = logs
       .mapWithState(StateSpec.function(sMap))
       .map(kv => (kv._1, kv._2.estimatedSize))
+      .print
   }
 }
 
-object CountBenchmark {
-  def main(args: Array[String]): Unit = {
-    if (args.length < 2) {
-      System.err.println(s"""
-        |Usage: CountBenchmark <brokers> <topics>
-        |  <brokers> is a list of one or more Kafka brokers
-        |  <topics> is a list of one or more kafka topics to consume from
-        |""".stripMargin)
-      System.exit(1)
-    }
-    val Array(brokers, topics) = args
-    val topicsSet = topics.split(",").toSet
-    new CountBenchmark(brokers, topicsSet).start()
-  }
+object CountBenchmark extends App {
+  val argHelper = new SparkArgHelper(args)
+  new CountBenchmark(
+    argHelper.CliArgs.kafkaBrokers,
+    argHelper.CliArgs.kafkaTopics.split(",").toSet
+  ).start
 }

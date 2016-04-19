@@ -12,10 +12,10 @@ class SparkArgHelper(args: Array[String]) {
     @Option(name = "-master", usage = "Spark master url")
     var masterUrl: String = "local[*]"
 
-    @Option(name = "-kafka.metadata.broker.list", usage = "kafka broker info")
+    @Option(name = "-kafka_brokers", usage = "kafka broker info")
     var kafkaBrokers: String = ""
 
-    @Option(name = "-kafka.topics", usage = "kafka topics separated by ,")
+    @Option(name = "-kafka_topics", usage = "kafka topics separated by ,")
     var kafkaTopics: String = "liberty"
 
     @Option(name = "output", usage = "kafka, cassandra, or text")

@@ -6,7 +6,6 @@ import com.concord.utils.SparkArgHelper
 
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream._
-import org.apache.spark.rdd.RDD
 
 /** Implement a computation that consumes a kafka topic and counts all
   * unique space delimited strings grouped by month and year, per
@@ -23,7 +22,7 @@ class TimeCountBenchmark(
   override def applicationName: String = "TimeCount"
   override def streamLogic: Unit = {
     /** Parse List[DStream[(K,V)]] and returned filtered valid logs  */
-    val logStream = stream
+    stream
       .map(x => SimpleDateParser.parse(x._2) match {
         case Some(x) => Some((s"$x.month-$x.year", x.msg))
         case _ => None
@@ -35,9 +34,9 @@ class TimeCountBenchmark(
       * Then map value collection into a set in order to get a count of unique
       * items in the iterable
       */
-    val uniqueWindowGroups = logStream
       .groupByKeyAndWindow(windowLength, slideInterval)
       .map(x => (x._1, x._2.toSet.size))
+      .print
   }
 }
 
@@ -46,5 +45,9 @@ object TimeCountBenchmark extends App {
   new TimeCountBenchmark(
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
+<<<<<<< Updated upstream
   )
+=======
+  ).start
+>>>>>>> Stashed changes
 }
