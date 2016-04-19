@@ -13,7 +13,7 @@ import org.apache.spark.rdd.RDD
   * particular windowing duration and interval
   */
 class TimeCountBenchmark(brokers: String, topics: Set[String])
-    extends BenchmarkStreamContext[String, Int](brokers, topics) {
+    extends BenchmarkStreamContext(brokers, topics) {
   private val windowLength: Duration = Seconds(10)
   private val slideInterval: Duration = Seconds(1)
 

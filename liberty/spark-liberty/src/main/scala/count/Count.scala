@@ -14,7 +14,7 @@ import com.twitter.algebird.HLL
   * all unique space delimited strings grouped by month and year
   */
 class CountBenchmark(brokers: String, topics: Set[String])
-    extends BenchmarkStreamContext[String, Double](brokers, topics) {
+    extends BenchmarkStreamContext(brokers, topics) {
   private val hllMonoid = new HyperLogLogMonoid(12)
 
   override def batchInterval: Duration =  Seconds(1)

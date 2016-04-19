@@ -20,7 +20,7 @@ class PatternMatchBenchmark(
   cassandraHosts: String,
   brokers: String,
   topics: Set[String])
-    extends BenchmarkStreamContext[Int, String](brokers, topics) {
+    extends BenchmarkStreamContext(brokers, topics) {
   /** Add additional cassandra param field to superclass configurations params */
   sparkConf.set("spark.cassandra.connection.host", cassandraHosts)
 
