@@ -12,8 +12,9 @@ import org.apache.spark.rdd.RDD
   * unique space delimited strings grouped by month and year, per
   * particular windowing duration and interval
   */
-class TimeCountBenchmark(brokers: String, topics: Set[String])
-    extends BenchmarkStreamContext(brokers, topics) {
+class TimeCountBenchmark(
+  override val brokers: String, override val topics: Set[String])
+    extends BenchmarkStreamContext {
   private val windowLength: Duration = Seconds(10)
   private val slideInterval: Duration = Seconds(1)
 
@@ -40,12 +41,10 @@ class TimeCountBenchmark(brokers: String, topics: Set[String])
   }
 }
 
-object TimeCountBenchmark {
-  def main(args: Array[String]): Unit = {
-    val argHelper = new SparkArgHelper(args)
-    new TimeCountBenchmark(
-      argHelper.CliArgs.kafkaBrokers,
-      argHelper.CliArgs.kafkaTopics.split(",").toSet
-    )
-  }
+object TimeCountBenchmark extends App {
+  val argHelper = new SparkArgHelper(args)
+  new TimeCountBenchmark(
+    argHelper.CliArgs.kafkaBrokers,
+    argHelper.CliArgs.kafkaTopics.split(",").toSet
+  )
 }

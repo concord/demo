@@ -13,8 +13,9 @@ import com.twitter.algebird.HLL
 /** Implement a computation that consumes a kafka topic and estimated
   * all unique space delimited strings grouped by month and year
   */
-class CountBenchmark(brokers: String, topics: Set[String])
-    extends BenchmarkStreamContext(brokers, topics) {
+class CountBenchmark(
+  override val brokers: String, override val topics: Set[String])
+    extends BenchmarkStreamContext {
   private val hllMonoid = new HyperLogLogMonoid(12)
 
   override def batchInterval: Duration =  Seconds(1)

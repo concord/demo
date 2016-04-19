@@ -29,9 +29,9 @@ object BenchmarkStreamContext extends Logging {
  * making this configurable. Just override the unimplemented methods with
  * your stream processing logic.
  */
-class BenchmarkStreamContext(
-  brokers: String,
-  topics: Set[String]) {
+trait BenchmarkStreamContext {
+  def brokers: String = ???
+  def topics: Set[String] = ???
   lazy val sparkConf = new SparkConf()
     .setAppName(applicationName)
     .set("spark.mesos.executor.home", "/usr/lib/spark")
@@ -39,7 +39,7 @@ class BenchmarkStreamContext(
     .set("spark.streaming.kafka.maxRatePerPartition", streamingRate.toString)
 
   private lazy val ssc = new StreamingContext(sparkConf, batchInterval)
-  ssc.checkpoint("/tmp/__" + applicationName.toLowerCase)
+  ssc.checkpoint("/tmp/concord_spark_" + applicationName.toLowerCase)
 
   private lazy val kafkaParams = Map[String, String](
     "metadata.broker.list" -> brokers,
