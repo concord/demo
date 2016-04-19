@@ -34,5 +34,5 @@ object Deduplication extends App {
   new Deduplication(
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
-  )
+  ).start
 }
