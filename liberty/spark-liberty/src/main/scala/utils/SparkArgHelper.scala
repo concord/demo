@@ -32,6 +32,9 @@ class SparkArgHelper(args: Array[String]) {
 
     @Option(name = "-cassandra_table", usage = "irq")
     var cassandraTable: String = "irq"
+
+    @Option(name = "-deduplication_payload_only", usage="payload_only or entire_msg(default)")
+    var deduplicationMode: String = "entire_msg"
   }
 
   val parser = new CmdLineParser(CliArgs)
