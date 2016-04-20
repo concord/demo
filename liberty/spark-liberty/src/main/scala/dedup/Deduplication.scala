@@ -1,13 +1,15 @@
 package dedup
 
-import com.concord.contexts.BenchmarkStreamContext
+import com.concord.contexts.{
+  BenchmarkStreamContext,KafkaProducerConfiguration}
 import com.concord.utils.{LogParser, SparkArgHelper}
 import org.apache.spark.streaming.{Duration, Seconds}
-
+import org.cloudera.spark.streaming.kafka.KafkaWriter._
+import kafka.producer.KeyedMessage
 
 class Deduplication(
   override val brokers: String, override val topics: Set[String], val deduplicationMode: String)
-    extends BenchmarkStreamContext {
+    extends BenchmarkStreamContext with KafkaProducerConfiguration {
   override def batchInterval: Duration = Seconds(1)
   override def streamingRate: Int = 750
   override def applicationName: String = "Deduplication"
@@ -23,9 +25,12 @@ class Deduplication(
   def streamPayloadOnly: Unit = {
     val data = stream.flatMap { line =>
       LogParser.parse(line._2)
-    }.map { logparser =>
-      (logparser.msg, logparser)
-    }
+    //}.map { logparser =>  logparser.msg
+      // (logparser.msg, logparser)
+    }.writeToKafka(producerProps, (x: LogParser) => {
+      new KeyedMessage[String,String]("foobartopic",
+        x.buildKey.toString, x.buildValue)
+    })
     // TODO(asher) - this doesn't compile
     // val uniques = data.reduceByKey((m: String, l: LogParser) => m)
     // val tsUpFront = uniques map { line => (line._1.get.timestamp, line._1.get.buildValue) }
@@ -49,7 +54,6 @@ class Deduplication(
   val argHelper = new SparkArgHelper(args)
   new Deduplication(
     argHelper.CliArgs.kafkaBrokers,
-    argHelper.CliArgs.kafkaTopics.split(",").toSet,
-    argHelper.CliArgs.deduplicationMode
+    argHelper.CliArgs.kafkaTopics.split(",").toSet, argHelper.CliArgs.deduplicationMode
   )
 }
