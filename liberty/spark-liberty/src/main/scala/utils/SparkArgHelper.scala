@@ -22,7 +22,7 @@ class SparkArgHelper(args: Array[String]) {
     var outputDetails: String = "/tmp/sample.txt"
 
     @Option(name = "-cassandra_hosts", usage = "10.2.0.0,10,23.32.1")
-    var cassandraHosts: String = "127.0.0.1"
+    var cassandraHosts: String = "tmp-mesos-cassandra-1.c.rbonut.internal"
 
     @Option(name = "-cassandra_keyspace", usage = "keyspace name")
     var cassandraKeyspace: String = "test_keyspace"

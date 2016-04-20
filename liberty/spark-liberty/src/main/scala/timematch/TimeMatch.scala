@@ -18,29 +18,27 @@ class TimeMatchBenchmark(
   override val brokers: String,
   override val topics: Set[String])
     extends BenchmarkStreamContext {
-  /** Add additional cassandra param field to superclass configurations params */
-  sparkConf.set("spark.cassandra.connection.host", cassandraHosts)
-
   /** Constants */
   private val windowLength: Duration = Seconds(10)
   private val slideInterval: Duration = Seconds(10)
 
   /** Overidden constants and impl */
-  override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 3400 // ~ 500k / 144(partitions)
+  override def confParams: List[(String, String)] =
+    List(("spark.cassandra.connection.host", cassandraHosts))
+  override def batchInterval: Duration = Seconds(10)
+  override def streamingRate: Int = 15000
   override def applicationName: String = "TimeMatch"
 
   /** If we could parameterize a DStream over a guarenteed serializble type, then
     * we could extend the logic from com.concord.pmatch.PatternMatchBenchmark */
   override def streamLogic: Unit = {
     stream
-      .map(x => LogParser.parse(x._2) match {
+      .flatMap(x => LogParser.parse(x._2) match {
         case Some(x) if (x.msg.contains("IRQ")) => Some(x.buildKey, x.buildValue)
         case _ => None
       })
-      .filter(!_.isEmpty)
-      .map(_.get)
-      .window(windowLength, slideInterval)
+      .groupByKeyAndWindow(windowLength, slideInterval)
+      .map(x => (x._1, x._2.head))
       .saveToCassandra(keyspace, tableName, SomeColumns("key", "value"))
   }
 }
@@ -53,5 +51,5 @@ object TimeMatchBenchmark extends App {
     argHelper.CliArgs.cassandraHosts,
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
-  )
+  ).start
 }
