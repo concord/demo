@@ -52,7 +52,6 @@ class ApproxDeduplication(
 }
 
 class ApproxArgs(args: Array[String]) {
-  import scala.collection.JavaConversions._
   object cli {
     @Option(name = "-kafka_brokers", usage = "i.e. localhost:9092,1.1.1.2:9092")
     var kafkaBrokers: String = ""
@@ -63,6 +62,7 @@ class ApproxArgs(args: Array[String]) {
   }
   val parser = new CmdLineParser(cli)
   try {
+    import scala.collection.JavaConversions._
     parser.parseArgument(args.toList)
   } catch {
     case e: CmdLineException =>
