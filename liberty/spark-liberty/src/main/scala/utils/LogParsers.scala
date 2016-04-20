@@ -21,7 +21,8 @@ object SimpleDateParser {
   }
 }
 
-case class LogParser(timestamp: Integer,
+case class LogParser(
+  timestamp: Integer,
   username: String,
   nodename: String,
   msg: String) {
@@ -46,5 +47,4 @@ object LogParser {
         => Some(LogParser(timestamp.toInt, username, nodename, msg))
     case _ => None
   }
-
 }

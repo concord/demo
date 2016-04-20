@@ -16,25 +16,30 @@ import org.apache.spark.SparkConf
  * your stream processing logic.
  */
 trait BenchmarkStreamContext {
-  def brokers: String = ???
-  def topics: Set[String] = ???
-  lazy val sparkConf = new SparkConf()
-    .setAppName(applicationName)
-    .set("spark.mesos.executor.home", "/usr/lib/spark")
-    .set("spark.default.parallelism", "120")
-    //.set("spark.streaming.backpressure.enabled", "true") // Throttle rate
-    .set("spark.streaming.kafka.maxRatePerPartition", streamingRate.toString)
+  private def sparkConf: SparkConf = {
+    val conf = new SparkConf()
+      .setAppName(applicationName)
+      .set("spark.mesos.executor.home", "/usr/lib/spark")
+      .set("spark.default.parallelism", "120")
+      .set("spark.streaming.kafka.maxRatePerPartition", streamingRate.toString)
+    confParams.map(x => conf.set(x._1, x._2))
+    conf
+  }
 
-  private lazy val ssc = new StreamingContext(sparkConf, batchInterval)
+  private val ssc = new StreamingContext(sparkConf, batchInterval)
   ssc.checkpoint("/tmp/concord_spark_" + applicationName.toLowerCase)
 
-  private lazy val kafkaParams = Map[String, String](
+  private val kafkaParams = Map[String, String](
     "metadata.broker.list" -> brokers,
     "auto.offset.reset" -> "smallest")
 
-  lazy val stream = KafkaUtils.createDirectStream[String,
+  val stream = KafkaUtils.createDirectStream[String,
     String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
 
+  def brokers: String = ???
+  def topics: Set[String] = ???
+
+  def confParams: List[(String, String)] = List()
   def streamingRate: Int = ???
   def batchInterval: Duration = ???
   def applicationName: String = ???
