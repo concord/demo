@@ -38,7 +38,7 @@ class ApproxDeduplication(
       LogParser.parse(line._2) match {
         case Some(x) =>
           if(!bf.contains(x.msg).isTrue){
-            bf = bfMonoid.create(x.msg)
+            bf = bf ++ bfMonoid.create(x.msg)
             Some((x.buildKey.toString, x.buildValue))
           }else {
             None
