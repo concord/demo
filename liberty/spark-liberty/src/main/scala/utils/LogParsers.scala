@@ -11,18 +11,20 @@ case class SimpleDateParser(year: Integer, month: Integer, msg: String) {
 }
 
 object SimpleDateParser {
-  private val regex = """-\s\d+\s(\d+)\.\d+\.(\d+)\s\w+\s\w+\s\d+\s\d+:\d+:\d+\s\S+\s(.*)$""".r
+  private val regex =
+    """-\s\d+\s(\d+)\.\d+\.(\d+)\s\w+\s\w+\s\d+\s\d+:\d+:\d+\s\S+\s(.*)$""".r
 
   def parse(input: String): Option[SimpleDateParser] = input match {
-    case regex(year, month, msg) => Some(SimpleDateParser(year.toInt, month.toInt, msg))
+    case regex(year, month, msg) =>
+      Some(SimpleDateParser(year.toInt, month.toInt, msg))
     case _ => None
   }
 }
 
 case class LogParser(timestamp: Integer,
-                     username: String,
-                     nodename: String,
-                     msg: String) {
+  username: String,
+  nodename: String,
+  msg: String) {
   override def toString: String = buildKey + "||" + buildValue
   def buildKey: Int = msg.hashCode + timestamp
   def buildValue: String = {
@@ -34,7 +36,9 @@ case class LogParser(timestamp: Integer,
 
 object LogParser {
   private val regex = """-\s(\d+)(?:\s\S+){5}\s(\w+)(.)(\w+)\s(.*)$""".r
-  private val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+  private val dateFormat =
+    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
+
   dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
   def parse(input: String): Option[LogParser] = input match {

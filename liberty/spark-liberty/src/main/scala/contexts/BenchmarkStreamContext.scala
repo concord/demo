@@ -9,20 +9,6 @@ import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.SparkConf
 
-import org.apache.spark.Logging
-import org.apache.log4j.{ Level, Logger }
-
-object BenchmarkStreamContext extends Logging {
-  def setStreamingLogLevels() {
-    val log4jInitialized = Logger.getRootLogger.getAllAppenders.hasMoreElements
-    if (!log4jInitialized) {
-      // We first log something to initialize Spark's default logging, then we override the
-      // logging level.
-      Logger.getRootLogger.setLevel(Level.WARN)
-    }
-  }
-}
-
 /**
  * Use this StreamContext to ingest data from a set of kafka brokers on a
  * given topic set. A bunch of stuff is hardcoded for this demo, consider
@@ -54,7 +40,6 @@ trait BenchmarkStreamContext {
   def applicationName: String = ???
   def streamLogic: Unit = ???
   def start(): Unit = {
-    BenchmarkStreamContext.setStreamingLogLevels()
     streamLogic
     ssc.start()
     ssc.awaitTermination()
