@@ -27,10 +27,10 @@ class ApproxDeduplication(
   override def streamingRate: Int = 750
   override def applicationName: String = "ApproxDeduplication"
   override def streamLogic: Unit = {
-    val NUM_HASHES = 6
-    val WIDTH = 32
-    val SEED = 1
-    val bfMonoid = new BloomFilterMonoid(NUM_HASHES, WIDTH, SEED)
+    val kProbFalsePositive = 0.08
+    val kPopulation = 265569231
+    val kSeed = 1
+    val bfMonoid = BloomFilter(kPopulation, kProbFalsePositive, kSeed)
 
     var bf = bfMonoid.zero
 
