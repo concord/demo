@@ -1,4 +1,4 @@
-package dedup
+package com.concord.dedup
 
 import com.concord.contexts.{
   BenchmarkStreamContext,KafkaProducerConfiguration}
