@@ -2,7 +2,7 @@ package com.concord.contexts
 import java.util.Properties
 trait KafkaProducerConfiguration {
   def brokers: String = ???
-  lazy val producerProps: Properties = {
+  def producerProps: Properties = {
     val producerConf = new Properties()
     producerConf.put("serializer.class", "kafka.serializer.StringEncoder")
     producerConf.put("key.serializer.class", "kafka.serializer.StringEncoder")
