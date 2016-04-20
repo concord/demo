@@ -25,7 +25,7 @@ lazy val root = (project in file(".")).
     javaOptions in run += "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:8000"
   )
 
-mainClass in assembly := Some("io.concord.jobs.WordCountJob")
+mainClass in assembly := Some("io.concord.eval.jobs.WordCountJob")
 
 mergeStrategy in assembly := {
   case x if x.endsWith("project.clj") => MergeStrategy.discard // Leiningen build files
