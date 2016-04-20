@@ -19,28 +19,25 @@ class PatternMatchBenchmark(
   tableName: String,
   cassandraHosts: String,
   override val brokers: String,
-  override val topics: Set[String])
-    extends BenchmarkStreamContext {
-  /** Add additional cassandra param field to superclass configurations params */
-  sparkConf.set("spark.cassandra.connection.host", cassandraHosts)
+  override val topics: Set[String]) extends BenchmarkStreamContext {
+  /** Pass through cassandraHosts to sparkConf */
+  override def confParams: List[(String, String)] =
+    List(("spark.cassandra.connection.host", cassandraHosts))
 
-  /** Overidden constants and impl */
+  /** Manual tuning for best performance */
   override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 1000
+  override def streamingRate: Int = 15000
   override def applicationName: String = "PatternMatch"
 
-  /** Custom logic transforms superclasses kafka istream */
+  /** Build DStream[(k, v)] of valid logs with specially
+    * constructed key. Documentation of key is in utils.LogParser
+    * After filtering non matches and improper logs push to cassandra */
   override def streamLogic: Unit = {
-    /** Build DStream[(k, v)] of valid logs with specially
-      * constructed key. Documentation of key is in utils.LogParser
-      * After filtering non matches and improper logs push to cassandra*/
     stream
-      .map(x => LogParser.parse(x._2) match {
+      .flatMap(x => LogParser.parse(x._2) match {
         case Some(x) if (x.msg.contains("IRQ")) => Some(x.buildKey, x.buildValue)
         case _ => None
       })
-      .filter(!_.isEmpty)
-      .map(_.get)
       .saveToCassandra(keyspace, tableName, SomeColumns("key", "value"))
   }
 }
@@ -54,6 +51,6 @@ object PatternMatchBenchmark {
       argHelper.CliArgs.cassandraHosts,
       argHelper.CliArgs.kafkaBrokers,
       argHelper.CliArgs.kafkaTopics.split(",").toSet
-    )
+    ).start
   }
 }
