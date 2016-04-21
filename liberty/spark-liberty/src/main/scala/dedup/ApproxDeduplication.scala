@@ -1,9 +1,9 @@
 package com.concord.dedup
 
-import com.concord.contexts.{
-  BenchmarkStreamContext,KafkaProducerConfiguration}
+import com.concord.contexts.BenchmarkStreamContext
 import com.concord.utils.LogParser
 import org.apache.spark.streaming.{Duration, Seconds}
+import org.apache.spark.broadcast.Broadcast
 /**
   *  Algebird is needed w/ wild card for, serialization,
   *  bloom filters and imlicit conversions.
@@ -15,14 +15,41 @@ import org.apache.kafka.clients.producer.{
   ProducerRecord
 }
 
+
+class KafkaSink(createProducer: () => KafkaProducer[String, String])
+    extends Serializable {
+  lazy val producer = createProducer()
+  def send(topic: String, key: String, value: String): Unit =
+    producer.send(new ProducerRecord(topic, key, value))
+}
+
+object KafkaSink {
+  def apply(brokers: String): KafkaSink = {
+    val f = () => {
+      val props = new java.util.Properties()
+      props.put("bootstrap.servers", brokers)
+      props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+      props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+      println("Creating new kafka producer")
+      val producer = new KafkaProducer[String, String](props)
+      sys.addShutdownHook {
+        producer.close()
+      }
+      producer
+    }
+    new KafkaSink(f)
+  }
+}
+
 class ApproxDeduplication(
   override val brokers: String,
   override val topics: Set[String],
   val outputTopic: String)
-    extends BenchmarkStreamContext with KafkaProducerConfiguration {
+    extends BenchmarkStreamContext {
   override def batchInterval: Duration = Seconds(1)
   override def streamingRate: Int = 15000
   override def applicationName: String = "ApproxDeduplication"
+
   override def streamLogic: Unit = {
     val kProbFalsePositive = 0.08
     val kPopulation = 265569231
@@ -31,7 +58,7 @@ class ApproxDeduplication(
 
     var bf = bfMonoid.zero
 
-    stream.flatMap { line =>
+    val kafkaOut = stream.flatMap { line =>
       LogParser.parse(line._2) match {
         case Some(x) =>
           if(!bf.contains(x.msg).isTrue){
@@ -42,12 +69,13 @@ class ApproxDeduplication(
           }
         case None => None
       }
-    }.foreachRDD{ rdd => (
+    }
+    val broadcast: Broadcast[KafkaSink] =
+      kafkaOut.context.sparkContext.broadcast(KafkaSink(brokers))
+    kafkaOut.foreachRDD{ rdd => (
       rdd.foreachPartition(partition => {
-        val producer = new KafkaProducer[String,String](producerProps)
         partition.foreach { case (k,v) =>
-          val r = new ProducerRecord[String,String](outputTopic,k,v)
-          producer.send(r)
+          broadcast.value.send(outputTopic,k,v)
         }
       })
     )}

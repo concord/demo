@@ -1,14 +1,15 @@
 package dedup
 
-import com.concord.contexts.{
-  BenchmarkStreamContext,KafkaProducerConfiguration}
+import com.concord.contexts.BenchmarkStreamContext
 import com.concord.utils.{LogParser, SparkArgHelper}
 import org.apache.spark.streaming.{Duration, Seconds}
 import kafka.producer.KeyedMessage
 
 class Deduplication(
-  override val brokers: String, override val topics: Set[String], val deduplicationMode: String)
-    extends BenchmarkStreamContext with KafkaProducerConfiguration {
+  override val brokers: String,
+  override val topics: Set[String],
+  val deduplicationMode: String) extends BenchmarkStreamContext {
+
   override def batchInterval: Duration = Seconds(1)
   override def streamingRate: Int = 750
   override def applicationName: String = "Deduplication"
