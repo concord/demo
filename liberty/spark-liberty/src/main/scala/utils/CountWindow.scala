@@ -1,13 +1,12 @@
 package com.concord.utils
 
-import com.concord.contexts.BenchmarkStreamContext
-
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.rdd.RDD
 
+import scala.reflect.ClassTag
+
 object EnrichedStreams {
-  implicit class CountingDStream[T](dstream: DStream[T])
-      extends BenchmarkStreamContext {
+  implicit class CountingDStream[T : ClassTag](val dstream: DStream[T]) {
     /** Return the bucket number of the nth record, returns 'None' in the case that
       * our buckets are spaced and the record should be omitted from the stream  */
     private def findEdge(
@@ -40,10 +39,12 @@ object EnrichedStreams {
       }
 
     def countingWindow(windowLength: Int, slideInterval: Int): Unit = {
-      val isOpened = (w: Iterable[(String, String)]) => w.size < windowLength
+      val isOpened = (w: Iterable[T]) => w.size < windowLength
 
-      var leftovers: RDD[(String, String)] = sparkContext.emptyRDD
-      stream
+      var leftovers: RDD[T] = dstream.context
+        .sparkContext.emptyRDD.asInstanceOf[RDD[T]]
+
+      dstream
         .transform( rdd => {
           /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
           val allWindows = rdd
