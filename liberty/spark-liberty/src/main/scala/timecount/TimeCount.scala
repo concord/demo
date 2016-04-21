@@ -7,12 +7,14 @@ import com.concord.utils.SparkArgHelper
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream._
 
-/** Implement a computation that consumes a kafka topic and counts all
-  * unique space delimited strings grouped by month and year, per
-  * particular windowing duration and interval
-  */
+/**
+ * Implement a computation that consumes a kafka topic and counts all
+ * unique space delimited strings grouped by month and year, per
+ * particular windowing duration and interval
+ */
 class TimeCountBenchmark(
-  override val brokers: String, override val topics: Set[String])
+  override val brokers: String, override val topics: Set[String]
+)
     extends BenchmarkStreamContext {
   private val windowLength: Duration = Seconds(10)
   private val slideInterval: Duration = Seconds(1)
@@ -30,10 +32,11 @@ class TimeCountBenchmark(
       .filter(!_.isEmpty)
       .map(_.get)
 
-    /** Grouping operation creates DStream[K, Iterable[V]] split accross windows,
-      * Then map value collection into a set in order to get a count of unique
-      * items in the iterable
-      */
+      /**
+       * Grouping operation creates DStream[K, Iterable[V]] split accross windows,
+       * Then map value collection into a set in order to get a count of unique
+       * items in the iterable
+       */
       .groupByKeyAndWindow(windowLength, slideInterval)
       .map(x => (x._1, x._2.toSet.size))
       .print

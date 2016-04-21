@@ -1,6 +1,6 @@
 package com.concord.utils
 
-import org.kohsuke.args4j.{CmdLineException, CmdLineParser, Option}
+import org.kohsuke.args4j.{ CmdLineException, CmdLineParser, Option }
 import scala.collection.JavaConversions._
 
 class SparkArgHelper(args: Array[String]) {
@@ -30,7 +30,7 @@ class SparkArgHelper(args: Array[String]) {
     @Option(name = "-cassandra_table", usage = "irq")
     var cassandraTable: String = "irq"
 
-    @Option(name = "-deduplication_payload_only", usage="payload_only or entire_msg(default)")
+    @Option(name = "-deduplication_payload_only", usage = "payload_only or entire_msg(default)")
     var deduplicationMode: String = "entire_msg"
   }
 

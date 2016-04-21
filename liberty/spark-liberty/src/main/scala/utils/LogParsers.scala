@@ -22,10 +22,11 @@ object SimpleDateParser {
 }
 
 case class LogParser(
-  timestamp: Integer,
-  username: String,
-  nodename: String,
-  msg: String) {
+    timestamp: Integer,
+    username: String,
+    nodename: String,
+    msg: String
+) {
   override def toString: String = buildKey + "||" + buildValue
   def buildKey: Int = msg.hashCode + timestamp
   def buildValue: String = {
@@ -43,8 +44,7 @@ object LogParser {
   dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
   def parse(input: String): Option[LogParser] = input match {
-    case regex(timestamp, username, nodeChar, nodename, msg)
-        => Some(LogParser(timestamp.toInt, username, nodename, msg))
+    case regex(timestamp, username, nodeChar, nodename, msg) => Some(LogParser(timestamp.toInt, username, nodename, msg))
     case _ => None
   }
 }

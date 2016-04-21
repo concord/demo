@@ -1,7 +1,7 @@
 package com.concord.contexts
 
 import kafka.serializer.StringDecoder
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.streaming.Duration
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.KafkaUtils
@@ -29,10 +29,10 @@ trait BenchmarkStreamContext {
 
   private val kafkaParams = Map[String, String](
     "metadata.broker.list" -> brokers,
-    "auto.offset.reset" -> "smallest")
+    "auto.offset.reset" -> "smallest"
+  )
 
-  val stream = KafkaUtils.createDirectStream[String,
-    String, StringDecoder, StringDecoder](streamingSparkContext, kafkaParams, topics)
+  val stream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](streamingSparkContext, kafkaParams, topics)
 
   def brokers: String = ???
   def topics: Set[String] = ???

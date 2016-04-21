@@ -2,10 +2,10 @@ package io.concord.eval
 
 // Thanks Anatoly
 case class LogLine(
-                    tsSecs: Int,
-                    fullLine: String,
-                    message: String
-                  )
+  tsSecs: Int,
+  fullLine: String,
+  message: String
+)
 
 object LineParser {
   // Thanks Alex
