@@ -21,12 +21,21 @@ import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.dstream.DStream
 
 object KafkaSink {
-  def newProducer(brokers: String): KafkaProducer[String, String] = {
-    val props = new java.util.Properties()
-    props.put("bootstrap.servers", brokers)
-    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-    new KafkaProducer[String, String](props)
+  @transient private var producer: KafkaProducer[String, String] = null;
+  def getInstance(brokers: String): KafkaProducer[String, String] = {
+    if (producer == null) {
+      synchronized {
+        val props = new java.util.Properties()
+        props.put("bootstrap.servers", brokers)
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        producer = new KafkaProducer[String, String](props)
+        sys.addShutdownHook {
+          producer.close
+        }
+      }
+    }
+    producer
   }
 }
 
@@ -63,23 +72,26 @@ class ApproxDeduplication(
     val kSeed = 1
     val bfMonoid = BloomFilter(kPopulation, kProbFalsePositive, kSeed)
     var bf = bfMonoid.zero
-    stream.flatMap { line =>
+    val kafkaOut = stream.flatMap { line =>
       LogParser.parse(line._2) match {
         case Some(x) =>
-          if (!bf.contains(x.msg).isTrue) {
-            bf = bf ++ bfMonoid.create(x.msg)
-            Some((x.buildKey.toString, x.buildValue))
-          } else {
+          val (newBF, contained) = bf.checkAndAdd(x.msg)
+          if(contained.isTrue){
             None
+          } else {
+            bf = newBF
+            Some((x.buildKey.toString, x.buildValue))
           }
         case None => None
       }
-    }.foreachRDD(rdd => {
+    }
+    // kafkaOut.count.print
+    kafkaOut.foreachRDD(rdd => {
       rdd.foreachPartition(part => {
-        val producer = KafkaSink.newProducer(brokers)
+        println("Created a new producer")
+        val producer = KafkaSink.getInstance(brokers)
         part.foreach(record =>
           producer.send(new ProducerRecord(outputTopic, record._1, record._2)))
-        producer.close
       })
     })
     streamingSparkContext.start()
@@ -110,6 +122,7 @@ class ApproxArgs(args: Array[String]) {
 
 object ApproxDeduplication extends App {
   val argv = new ApproxArgs(args)
+  println(s"Arguments: ${argv.cli}")
   new ApproxDeduplication(
     argv.cli.kafkaBrokers,
     argv.cli.kafkaTopics.split(",").toSet,
