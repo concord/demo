@@ -24,8 +24,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" % "spark-sql_2.10" % "1.6.1" % "provided",
   "args4j" % "args4j" % "2.33",
   "com.twitter" % "algebird-core_2.10" % "0.11.0",
-  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1",
-  "org.cloudera.spark.streaming.kafka" % "spark-kafka-writer" % "0.1.0"
+  "com.datastax.spark" %% "spark-cassandra-connector" % "1.6.0-M1"
 )
 
 mergeStrategy in assembly := {
