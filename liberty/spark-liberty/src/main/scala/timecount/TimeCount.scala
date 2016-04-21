@@ -21,19 +21,12 @@ class TimeCountBenchmark(
   override def streamingRate: Int = 750
   override def applicationName: String = "TimeCount"
   override def streamLogic: Unit = {
-    /** Parse List[DStream[(K,V)]] and returned filtered valid logs  */
+    /** ???  */
     stream
-      .map(x => SimpleDateParser.parse(x._2) match {
-        case Some(x) => Some((s"$x.month-$x.year", x.msg))
+      .flatMap(x => SimpleDateParser.parse(x._2) match {
+        case Some(x) => Some((s"${x.month}-${x.year}", x.msg))
         case _ => None
       })
-      .filter(!_.isEmpty)
-      .map(_.get)
-
-    /** Grouping operation creates DStream[K, Iterable[V]] split accross windows,
-      * Then map value collection into a set in order to get a count of unique
-      * items in the iterable
-      */
       .groupByKeyAndWindow(windowLength, slideInterval)
       .map(x => (x._1, x._2.toSet.size))
       .print
