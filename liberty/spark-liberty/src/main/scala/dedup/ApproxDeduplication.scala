@@ -5,18 +5,15 @@ import com.concord.contexts.{
 import com.concord.utils.LogParser
 import org.apache.spark.streaming.{Duration, Seconds}
 /**
-  * We need kafkawriter's implicit type to turn a DStream[T]
-  * into a stream that can save into kafka.
-  */
-import org.cloudera.spark.streaming.kafka.KafkaWriter._
-import kafka.producer.KeyedMessage
-/**
   *  Algebird is needed w/ wild card for, serialization,
   *  bloom filters and imlicit conversions.
   */
 import com.twitter.algebird._
 import org.kohsuke.args4j.{CmdLineException, CmdLineParser, Option}
-
+import org.apache.kafka.clients.producer.{
+  KafkaProducer,
+  ProducerRecord
+}
 
 class ApproxDeduplication(
   override val brokers: String,
@@ -24,7 +21,7 @@ class ApproxDeduplication(
   val outputTopic: String)
     extends BenchmarkStreamContext with KafkaProducerConfiguration {
   override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 750
+  override def streamingRate: Int = 15000
   override def applicationName: String = "ApproxDeduplication"
   override def streamLogic: Unit = {
     val kProbFalsePositive = 0.08
@@ -34,7 +31,7 @@ class ApproxDeduplication(
 
     var bf = bfMonoid.zero
 
-    val data = stream.flatMap { line =>
+    stream.flatMap { line =>
       LogParser.parse(line._2) match {
         case Some(x) =>
           if(!bf.contains(x.msg).isTrue){
@@ -45,9 +42,15 @@ class ApproxDeduplication(
           }
         case None => None
       }
-    }.writeToKafka(producerProps, (x) => {
-      new KeyedMessage[String,String](outputTopic,x._1,x._2)
-    })
+    }.foreachRDD{ rdd => (
+      rdd.foreachPartition(partition => {
+        val producer = new KafkaProducer[String,String](producerProps)
+        partition.foreach { case (k,v) =>
+          val r = new ProducerRecord[String,String](outputTopic,k,v)
+          producer.send(r)
+        }
+      })
+    )}
   }
 }
 

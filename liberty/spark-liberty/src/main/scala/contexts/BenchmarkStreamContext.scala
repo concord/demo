@@ -27,7 +27,6 @@ trait BenchmarkStreamContext {
   }
 
   private val ssc = new StreamingContext(sparkConf, batchInterval)
-  ssc.checkpoint("/tmp/concord_spark_" + applicationName.toLowerCase)
 
   private val kafkaParams = Map[String, String](
     "metadata.broker.list" -> brokers,

@@ -4,7 +4,6 @@ import com.concord.contexts.{
   BenchmarkStreamContext,KafkaProducerConfiguration}
 import com.concord.utils.{LogParser, SparkArgHelper}
 import org.apache.spark.streaming.{Duration, Seconds}
-import org.cloudera.spark.streaming.kafka.KafkaWriter._
 import kafka.producer.KeyedMessage
 
 class Deduplication(
@@ -25,12 +24,9 @@ class Deduplication(
   def streamPayloadOnly: Unit = {
     val data = stream.flatMap { line =>
       LogParser.parse(line._2)
-    //}.map { logparser =>  logparser.msg
-      // (logparser.msg, logparser)
-    }.writeToKafka(producerProps, (x: LogParser) => {
-      new KeyedMessage[String,String]("foobartopic",
-        x.buildKey.toString, x.buildValue)
-    })
+    }
+    //.map { logparser =>  logparser.msg
+    // (logparser.msg, logparser)
     // TODO(asher) - this doesn't compile
     // val uniques = data.reduceByKey((m: String, l: LogParser) => m)
     // val tsUpFront = uniques map { line => (line._1.get.timestamp, line._1.get.buildValue) }
