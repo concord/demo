@@ -1,14 +1,15 @@
 package dedup
 
 import com.concord.contexts.BenchmarkStreamContext
-import com.concord.utils.{LogParser, SparkArgHelper}
-import org.apache.spark.streaming.{Duration, Seconds}
+import com.concord.utils.{ LogParser, SparkArgHelper }
+import org.apache.spark.streaming.{ Duration, Seconds }
 import kafka.producer.KeyedMessage
 
 class Deduplication(
-  override val brokers: String,
-  override val topics: Set[String],
-  val deduplicationMode: String) extends BenchmarkStreamContext {
+    override val brokers: String,
+    override val topics: Set[String],
+    val deduplicationMode: String
+) extends BenchmarkStreamContext {
 
   override def batchInterval: Duration = Seconds(1)
   override def streamingRate: Int = 750
@@ -37,17 +38,14 @@ class Deduplication(
   }
 
   override def streamLogic: Unit = {
-    if(deduplicationMode.equalsIgnoreCase("entire_msg"))
-        streamLogicFullMsg
+    if (deduplicationMode.equalsIgnoreCase("entire_msg"))
+      streamLogicFullMsg
     else
-        streamPayloadOnly
+      streamPayloadOnly
   }
 }
 
-
-
-
-  object Deduplication extends App {
+object Deduplication extends App {
   val argHelper = new SparkArgHelper(args)
   new Deduplication(
     argHelper.CliArgs.kafkaBrokers,

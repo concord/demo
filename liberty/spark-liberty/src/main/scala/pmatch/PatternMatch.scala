@@ -11,15 +11,17 @@ import org.apache.spark.streaming.dstream.DStream
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.streaming._
 
-/** Implement a computation that consumes a kafka topics and publishes a unique
-  * key to Cassandra for every item that contains the string 'IRQ'.
-  */
+/**
+ * Implement a computation that consumes a kafka topics and publishes a unique
+ * key to Cassandra for every item that contains the string 'IRQ'.
+ */
 class PatternMatchBenchmark(
-  keyspace: String,
-  tableName: String,
-  cassandraHosts: String,
-  override val brokers: String,
-  override val topics: Set[String]) extends BenchmarkStreamContext {
+    keyspace: String,
+    tableName: String,
+    cassandraHosts: String,
+    override val brokers: String,
+    override val topics: Set[String]
+) extends BenchmarkStreamContext {
   /** Pass through cassandraHosts to sparkConf */
   override def confParams: List[(String, String)] =
     List(("spark.cassandra.connection.host", cassandraHosts))
@@ -29,9 +31,11 @@ class PatternMatchBenchmark(
   override def streamingRate: Int = 15000
   override def applicationName: String = "PatternMatch"
 
-  /** Build DStream[(k, v)] of valid logs with specially
-    * constructed key. Documentation of key is in utils.LogParser
-    * After filtering non matches and improper logs push to cassandra */
+  /**
+   * Build DStream[(k, v)] of valid logs with specially
+   * constructed key. Documentation of key is in utils.LogParser
+   * After filtering non matches and improper logs push to cassandra
+   */
   override def streamLogic: Unit = {
     stream
       .flatMap(x => LogParser.parse(x._2) match {

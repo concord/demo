@@ -16,7 +16,8 @@ class TimeMatchBenchmark(
   tableName: String,
   cassandraHosts: String,
   override val brokers: String,
-  override val topics: Set[String])
+  override val topics: Set[String]
+)
     extends BenchmarkStreamContext {
   /** Constants */
   private val windowLength: Duration = Seconds(10)
@@ -29,8 +30,10 @@ class TimeMatchBenchmark(
   override def streamingRate: Int = 15000
   override def applicationName: String = "TimeMatch"
 
-  /** If we could parameterize a DStream over a guarenteed serializble type, then
-    * we could extend the logic from com.concord.pmatch.PatternMatchBenchmark */
+  /**
+   * If we could parameterize a DStream over a guarenteed serializble type, then
+   * we could extend the logic from com.concord.pmatch.PatternMatchBenchmark
+   */
   override def streamLogic: Unit = {
     stream
       .flatMap(x => LogParser.parse(x._2) match {

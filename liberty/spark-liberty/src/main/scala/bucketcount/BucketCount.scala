@@ -7,7 +7,8 @@ import org.apache.spark.streaming._
 import org.apache.spark.streaming.dstream._
 
 class BucketCountBenchmark(
-  override val brokers: String, override val  topics: Set[String])
+  override val brokers: String, override val topics: Set[String]
+)
     extends BenchmarkStreamContext {
   /** Local constants */
   private val windowLimit: Int = 100000
