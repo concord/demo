@@ -3,9 +3,6 @@ package com.concord.utils
 import org.kohsuke.args4j.{CmdLineException, CmdLineParser, Option}
 import scala.collection.JavaConversions._
 
-/**
-  * Created by adev on 4/4/16.
-  */
 class SparkArgHelper(args: Array[String]) {
 
   object CliArgs {

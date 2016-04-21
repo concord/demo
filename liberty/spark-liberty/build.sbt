@@ -13,6 +13,7 @@ resolvers ++= Seq(
   "Conjars" at "http://conjars.org/repo/",
   "Maven-Repository.com" at "http://repo1.maven.org/maven2/",
   "Central" at "http://central.maven.org/maven2/",
+  "Cloudera" at "http://repository.cloudera.com/artifactory/cloudera-repos",
   Resolver.sonatypeRepo("public")
 )
 

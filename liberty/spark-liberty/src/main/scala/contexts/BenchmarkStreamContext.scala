@@ -1,13 +1,11 @@
 package com.concord.contexts
 
 import kafka.serializer.StringDecoder
-
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.streaming.Duration
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.dstream.DStream
-import org.apache.spark.SparkConf
 
 /**
  * Use this StreamContext to ingest data from a set of kafka brokers on a
@@ -26,15 +24,15 @@ trait BenchmarkStreamContext {
     conf
   }
 
-  private val ssc = new StreamingContext(sparkConf, batchInterval)
-  ssc.checkpoint("/tmp/concord_spark_" + applicationName.toLowerCase)
+  val sparkContext = new SparkContext(sparkConf)
+  val streamingSparkContext = new StreamingContext(sparkContext, batchInterval)
 
   private val kafkaParams = Map[String, String](
     "metadata.broker.list" -> brokers,
     "auto.offset.reset" -> "smallest")
 
   val stream = KafkaUtils.createDirectStream[String,
-    String, StringDecoder, StringDecoder](ssc, kafkaParams, topics)
+    String, StringDecoder, StringDecoder](streamingSparkContext, kafkaParams, topics)
 
   def brokers: String = ???
   def topics: Set[String] = ???
@@ -46,7 +44,7 @@ trait BenchmarkStreamContext {
   def streamLogic: Unit = ???
   def start(): Unit = {
     streamLogic
-    ssc.start()
-    ssc.awaitTermination()
+    streamingSparkContext.start()
+    streamingSparkContext.awaitTermination()
   }
 }
