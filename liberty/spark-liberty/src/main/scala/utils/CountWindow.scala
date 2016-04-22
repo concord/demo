@@ -9,6 +9,9 @@ import scala.reflect.ClassTag
 object EnrichedStreams {
   implicit class CountingDStream[T: ClassTag](@transient val dstream: DStream[T])
       extends Serializable {
+
+    @transient var spill: DStream[(Int, Iterable[T])] = null
+
     /**
      * Returns the window indicies for all windows that 'recIdx' should be in.
      * Indicies are a List() type because of overlapping windows. Could return
@@ -28,35 +31,34 @@ object EnrichedStreams {
       windowLength: Int,
       slideInterval: Int
     ): DStream[(Int, Iterable[T])] = {
-      var leftovers: RDD[T] = dstream.context
-        .sparkContext.emptyRDD.asInstanceOf[RDD[T]]
+      val windowed = if (spill == null) {
+        dstream
+      } else {
+        spill.flatMap(_._2).union(dstream)
+      }
 
-      val windowed = dstream
-        .transform(rdd => {
-          //val x = leftovers.union(rdd)
-          val isOpened = (w: (Int, Iterable[T])) => w._2.size < windowLength
+      val ret = windowed.transform(rdd => {
+        //val x = leftovers.union(rdd)
+        val isOpened = (w: (Int, Iterable[T])) => w._2.size < windowLength
 
-          /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
-          val allWindows = rdd
-            .zipWithIndex
-            /** RDD[(T, Long)] */
-            .flatMap((x) => {
-              val indicies =
-                windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
-              indicies.map((x._1, _))
-            })
-            .groupBy((t: Tuple2[T, Int]) => t._2) /** RDD[(K, List[T])]) */
-            .map(x => (x._1, x._2.map(_._1)))
+        /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
+        val allWindows = rdd
+          .zipWithIndex
+          /** RDD[(T, Long)] */
+          .flatMap((x) => {
+            val indicies =
+              windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
+            indicies.map((x._1, _))
+          })
+          .groupBy((t: Tuple2[T, Int]) => t._2)
+          /** RDD[(K, List[T])]) */
+          .map(x => (x._1, x._2.map(_._1)))
 
-          /** Stash windows that aren't filled */
-          leftovers = allWindows
-            .filter(isOpened)
-            .flatMap(_._2)
+        allWindows.map((x) => (isOpened(x), x))
+      }).groupByKey()
 
-          /** Stream should contain only closed windows */
-          allWindows.filter((x) => !isOpened(x))
-        })
-      windowed
+      spill = ret.filter(_._1).flatMap(_._2)
+      ret.filter(!_._1).flatMap(_._2)
     }
   }
 }

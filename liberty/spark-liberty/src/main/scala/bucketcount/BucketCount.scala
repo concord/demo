@@ -23,7 +23,7 @@ class BucketCountBenchmark(
     stream
       .flatMap(x => SimpleDateParser.parse(x._2) match {
         case Some(x) => Some((s"${x.month}-${x.year}", x.msg))
-        case _  => None
+        case _ => None
       })
       .groupByKey()
       .countingWindow(windowLength, slideInterval)
