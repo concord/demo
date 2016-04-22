@@ -17,34 +17,36 @@ object EnrichedStreams {
       maxId: Int,
       windowLength: Int,
       slideInterval: Int): List[Int] = {
-      println(s"recIdx=${recIdx},maxId=${maxId},length=${windowLength},slideInterval=${slideInterval}")
       val ranges = (for(i <- 0 to maxId by slideInterval) yield (i, windowLength + i))
-      ranges.filter{case(begin, end)=> recIdx >= begin && recIdx <= end}.map(_._1).toList
+      ranges.filter{case(begin, end)=> recIdx >= begin && recIdx < end}.map(_._1).toList
     }
 
-    def countingWindow(windowLength: Int, slideInterval: Int): DStream[Iterable[(T, Int)]] = {
-      // var leftovers: RDD[T] = dstream.context
-      //   .sparkContext.emptyRD.asInstanceOf[RDD[T]]
+    def countingWindow(
+      windowLength: Int,
+      slideInterval: Int): DStream[Iterable[(T, Int)]] = {
+      var leftovers: RDD[T] = dstream.context
+        .sparkContext.emptyRDD.asInstanceOf[RDD[T]]
 
       val windowed = dstream
         .transform( rdd => {
+          //val x = leftovers.union(rdd)
           val isOpened = (w: Iterable[(T, Int)]) => w.size < windowLength
 
           /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
           val allWindows = rdd
-            //.union(leftovers)
             .zipWithIndex /** RDD[(T, Long)] */
             .flatMap((x) => {
-              val indicies = windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
+              val indicies =
+                windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
               indicies.map((x._1,_))
             })
             .groupBy((t: Tuple2[T, Int]) => t._2)    /** RDD[(K, List[T])]) */
             .map(_._2) // Get rid of index/grouping id
 
           /** Stash windows that aren't filled */
-          // leftovers = allWindows
-          //   .filter(isOpened)
-          //   .flatMap(_.toList)
+          leftovers = allWindows
+            .filter(isOpened)
+            .flatMap(_.map(_._1))
 
           /** Stream should contain only closed windows */
           allWindows.filter((x) => ! isOpened(x))
