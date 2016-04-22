@@ -10,11 +10,11 @@ class BucketCountBenchmark(
   override val brokers: String, override val topics: Set[String]
 )
     extends BenchmarkStreamContext {
-  private val windowLength: Int = 1000000
-  private val slideInterval: Int = 100000
+  private val windowLength: Int = 21//1000000
+  private val slideInterval: Int = 17//100000
 
   override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 750 // Hasn't been calculated
+  override def streamingRate: Int = 51 // Hasn't been calculated
   override def applicationName: String = "BucketCount"
 
   override def streamLogic: Unit = {
