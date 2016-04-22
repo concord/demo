@@ -1,13 +1,14 @@
 package com.concord.bucketcount
 
 import com.concord.contexts.BenchmarkStreamContext
-import com.concord.utils.{LogParser, SparkArgHelper, SimpleDateParser}
-import org.apache.spark.streaming.{Duration, Seconds}
+import com.concord.utils.{ LogParser, SparkArgHelper, SimpleDateParser }
+import org.apache.spark.streaming.{ Duration, Seconds }
 
 import org.apache.spark.streaming.dstream._
 
 class BucketCountBenchmark(
-  override val brokers: String, override val topics: Set[String])
+  override val brokers: String, override val topics: Set[String]
+)
     extends BenchmarkStreamContext {
   private val windowLength: Int = 1000000
   private val slideInterval: Int = 100000
