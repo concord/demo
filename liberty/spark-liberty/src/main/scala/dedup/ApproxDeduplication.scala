@@ -67,28 +67,18 @@ class ApproxDeduplication(
       .createDirectStream[String, String, StringDecoder, StringDecoder](
         streamingSparkContext, kafkaParams, topics
       )
-    val kProbFalsePositive = 0.08
-    val kPopulation = 265569231
-    val kSeed = 1
-    val bfMonoid = BloomFilter(kPopulation, kProbFalsePositive, kSeed)
-    var bf = bfMonoid.zero
     val kafkaOut = stream.flatMap { line =>
       LogParser.parse(line._2) match {
         case Some(x) =>
-          val (newBF, contained) = bf.checkAndAdd(x.msg)
-          if(contained.isTrue){
-            None
-          } else {
-            bf = newBF
-            Some((x.buildKey.toString, x.buildValue))
-          }
+          Some((x.buildKey.toString, x.buildValue))
         case None => None
       }
     }
-    // kafkaOut.count.print
     kafkaOut.foreachRDD(rdd => {
-      rdd.foreachPartition(part => {
-        println("Created a new producer")
+      // Note: you can only do distinct on THIS RDD, not on
+      // the set of rdd's w/out a bloomfilter which never finishes
+      //
+      rdd.distinct.foreachPartition(part => {
         val producer = KafkaSink.getInstance(brokers)
         part.foreach(record =>
           producer.send(new ProducerRecord(outputTopic, record._1, record._2)))
