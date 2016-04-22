@@ -10,7 +10,7 @@ object EnrichedStreams {
   implicit class CountingDStream[T: ClassTag](@transient val dstream: DStream[T])
       extends Serializable {
 
-    @transient var spill: DStream[(Int, Iterable[T])] = null
+    @transient var spill: DStream[Iterable[T]] = null
 
     /**
      * Returns the window indicies for all windows that 'recIdx' should be in.
@@ -34,20 +34,20 @@ object EnrichedStreams {
       val windowed = if (spill == null) {
         dstream
       } else {
-        spill.flatMap(_._2).union(dstream)
+        spill.union(dstream)
       }
 
       val ret = windowed.transform(rdd => {
         //val x = leftovers.union(rdd)
         val isOpened = (w: (Int, Iterable[T])) => w._2.size < windowLength
-
+        val counts = rdd.count.toInt
         /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
         val allWindows = rdd
           .zipWithIndex
           /** RDD[(T, Long)] */
           .flatMap((x) => {
             val indicies =
-              windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
+              windowsForRecord(x._2, counts, windowLength, slideInterval)
             indicies.map((x._1, _))
           })
           .groupBy((t: Tuple2[T, Int]) => t._2)
@@ -57,7 +57,7 @@ object EnrichedStreams {
         allWindows.map((x) => (isOpened(x), x))
       }).groupByKey()
 
-      spill = ret.filter(_._1).flatMap(_._2)
+      spill = ret.filter(_._1).flatMap(_._2._2)
       ret.filter(!_._1).flatMap(_._2)
     }
   }
