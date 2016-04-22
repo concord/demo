@@ -27,14 +27,14 @@ object EnrichedStreams {
     def countingWindow(
       windowLength: Int,
       slideInterval: Int
-    ): DStream[Iterable[(T, Int)]] = {
+    ): DStream[(Int, Iterable[T])] = {
       var leftovers: RDD[T] = dstream.context
         .sparkContext.emptyRDD.asInstanceOf[RDD[T]]
 
       val windowed = dstream
         .transform(rdd => {
           //val x = leftovers.union(rdd)
-          val isOpened = (w: Iterable[(T, Int)]) => w.size < windowLength
+          val isOpened = (w: (Int, Iterable[T])) => w._2.size < windowLength
 
           /** Fill into buckets, RDD[(K, Iterable[T])], then strip grouping info */
           val allWindows = rdd
@@ -45,14 +45,13 @@ object EnrichedStreams {
                 windowsForRecord(x._2, rdd.count.toInt, windowLength, slideInterval)
               indicies.map((x._1, _))
             })
-            .groupBy((t: Tuple2[T, Int]) => t._2)
-            /** RDD[(K, List[T])]) */
-            .map(_._2) // Get rid of index/grouping id
+            .groupBy((t: Tuple2[T, Int]) => t._2) /** RDD[(K, List[T])]) */
+            .map(x => (x._1, x._2.map(_._1)))
 
           /** Stash windows that aren't filled */
           leftovers = allWindows
             .filter(isOpened)
-            .flatMap(_.map(_._1))
+            .flatMap(_._2)
 
           /** Stream should contain only closed windows */
           allWindows.filter((x) => !isOpened(x))
