@@ -37,9 +37,6 @@ class BucketCountBenchmark(
 object BucketCountBenchmark extends App {
   val argHelper = new SparkArgHelper(args)
   new BucketCountBenchmark(
-    argHelper.CliArgs.cassandraKeyspace,
-    argHelper.CliArgs.cassandraTable,
-    argHelper.CliArgs.cassandraHosts,
     argHelper.CliArgs.kafkaBrokers,
     argHelper.CliArgs.kafkaTopics.split(",").toSet
   ).start
