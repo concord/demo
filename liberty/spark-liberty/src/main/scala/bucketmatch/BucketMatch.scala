@@ -5,9 +5,12 @@ import com.concord.utils.{ LogParser, SparkArgHelper, SimpleDateParser }
 import org.apache.spark.streaming.{ Duration, Seconds }
 
 import org.apache.spark.streaming.dstream._
+import org.apache.spark.rdd.RDD
 
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.streaming._
+
+import scala.collection.mutable.{Queue => MutableQueue}
 
 class BucketMatchBenchmark(
   keyspace: String,
@@ -27,6 +30,8 @@ class BucketMatchBenchmark(
   override def streamLogic: Unit = {
     import com.concord.utils.EnrichedStreams._
 
+    implicit val queue = MutableQueue[RDD[(Int, String)]]()
+
     stream
       /** Strip bad logs, return tuple of newly built (K, V) */
       .flatMap(x => LogParser.parse(x._2) match {
@@ -36,10 +41,7 @@ class BucketMatchBenchmark(
       /** Break stream into discrete chunks */
       .countingWindow(windowLength, slideInterval)
       /** Erase duplicates and transform into (Key, Value) tuples */
-      .flatMap(x => {
-        val uniques = x._2.toSet
-        uniques.map((data) => (x._1, data))
-      })
+      .flatMap(_.toSet)
       /** INSERT keyspace.tableName -- col name 'key' and 'value' and of type text */
       .saveToCassandra(keyspace, tableName, SomeColumns("key", "value"))
   }

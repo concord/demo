@@ -29,11 +29,6 @@ class TimeMatchBenchmark(
   override def batchInterval: Duration = Seconds(10)
   override def streamingRate: Int = 15000
   override def applicationName: String = "TimeMatch"
-
-  /**
-   * If we could parameterize a DStream over a guarenteed serializble type, then
-   * we could extend the logic from com.concord.pmatch.PatternMatchBenchmark
-   */
   override def streamLogic: Unit = {
     stream
       .flatMap(x => LogParser.parse(x._2) match {
@@ -41,7 +36,10 @@ class TimeMatchBenchmark(
         case _ => None
       })
       .groupByKeyAndWindow(windowLength, slideInterval)
-      .map(x => (x._1, x._2.head))
+      .flatMap((x) => {
+        val uniques = x._2.toSet
+        uniques.map((y) => (x._1, y))
+      })
       .saveToCassandra(keyspace, tableName, SomeColumns("key", "value"))
   }
 }

@@ -29,8 +29,12 @@ class TimeCountBenchmark(
         case _ => None
       })
       .groupByKeyAndWindow(windowLength, slideInterval)
-      .map(x => (x._1, x._2.toSet.size))
-      .print
+      .foreachRDD(rdd => {
+        if(rdd.count != 0) {
+          val distinct = rdd.distinct.count
+          println(s"There are ${distinct} distinct elements in this window")
+        }
+      })
   }
 }
 
