@@ -21,12 +21,16 @@ class BucketCountBenchmark(
     import com.concord.utils.EnrichedStreams._
 
     stream
+      /** Strip bad logs, return tuple of newly built (K, V) */
       .flatMap(x => SimpleDateParser.parse(x._2) match {
         case Some(x) => Some((s"${x.month}-${x.year}", x.msg))
         case _  => None
       })
+      /** Group logs by month-year key */
       .groupByKey()
+      /** Break stream into discrete chunks 'overlapping' windows */
       .countingWindow(windowLength, slideInterval)
+      /** Erase duplicates and transform total unique in chunk */
       .map((x) => x._2.toSet.size)
       .foreachRDD(rdd => {
         rdd.foreach(size => {
