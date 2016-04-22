@@ -36,7 +36,7 @@ object EnrichedStreams {
       windowLength: Int,
       slideInterval: Int
     )(implicit queue: MutableQueue[RDD[T]]): DStream[Iterable[T]] = {
-      val leftoverStream = dstream.context.queueStream(queue)
+      val leftoverStream = dstream.context.queueStream(queue, false)
 
       /** Create stream that combines previous batches open windows with new
         * incoming records, then transform each rdd to split records */

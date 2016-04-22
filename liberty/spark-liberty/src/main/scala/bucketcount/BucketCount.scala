@@ -16,14 +16,14 @@ class BucketCountBenchmark(
   private val windowLength: Int = 1000000
   private val slideInterval: Int = 100000
 
-  override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 700 // Hasn't been calculated
+  override def batchInterval: Duration = Seconds(5)
+  override def streamingRate: Int = 500 // ... comment
   override def applicationName: String = "BucketCount"
 
   override def streamLogic: Unit = {
     import com.concord.utils.EnrichedStreams._
 
-    implicit val queue = MutableQueue[RDD[(String, String)]]()
+    implicit val queue = MutableQueue[RDD[(String, Iterable[String])]]()
 
     stream
       /** Strip bad logs, return tuple of newly built (K, V) */
@@ -32,15 +32,13 @@ class BucketCountBenchmark(
         case _ => None
       })
       /** Group logs by month-year key */
-      //.groupByKey()
+      .groupByKey()
       /** Break stream into discrete chunks 'overlapping' windows */
       .countingWindow(windowLength, slideInterval)
-      .map((x) => x.size)
+      /** Remove duplicates and count uniques */
       .foreachRDD(rdd => {
-        println("RDD count: " + rdd.count)
-        rdd.foreach(size => {
-          println(s"There are ${size} unique records in this bucket")
-        })
+        val distinct = rdd.distinct
+        println("RDD count: " + distinct.count)
      })
   }
 }
