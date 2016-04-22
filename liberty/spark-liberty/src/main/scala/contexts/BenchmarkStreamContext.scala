@@ -32,7 +32,8 @@ trait BenchmarkStreamContext {
     "auto.offset.reset" -> "smallest"
   )
 
-  val stream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](streamingSparkContext, kafkaParams, topics)
+  val stream = KafkaUtils.createDirectStream[String,
+    String, StringDecoder, StringDecoder](streamingSparkContext, kafkaParams, topics)
 
   def brokers: String = ???
   def topics: Set[String] = ???
