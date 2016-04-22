@@ -10,7 +10,7 @@ object EnrichedStreams {
   implicit class CountingDStream[T: ClassTag](@transient val dstream: DStream[T])
       extends Serializable {
 
-    @transient var spill: DStream[Iterable[T]] = null
+    @transient var spill: DStream[T] = null
 
     /**
      * Returns the window indicies for all windows that 'recIdx' should be in.
@@ -57,7 +57,7 @@ object EnrichedStreams {
         allWindows.map((x) => (isOpened(x), x))
       }).groupByKey()
 
-      spill = ret.filter(_._1).flatMap(_._2._2)
+      spill = ret.filter(_._1).flatMap(_._2).flatMap(_._2)
       ret.filter(!_._1).flatMap(_._2)
     }
   }
