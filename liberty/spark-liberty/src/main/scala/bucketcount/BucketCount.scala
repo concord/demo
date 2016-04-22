@@ -1,4 +1,4 @@
-package com.concord.bucketmatch
+package com.concord.bucketcount
 
 import com.concord.contexts.BenchmarkStreamContext
 import com.concord.utils.{LogParser, SparkArgHelper, SimpleDateParser}
@@ -6,7 +6,7 @@ import org.apache.spark.streaming.{Duration, Seconds}
 
 import org.apache.spark.streaming.dstream._
 
-class BucketMatchBenchmark(
+class BucketCountBenchmark(
   keyspace: String,
   tableName: String,
   cassandraHosts: String,
@@ -14,14 +14,12 @@ class BucketMatchBenchmark(
   override val topics: Set[String]
 )
     extends BenchmarkStreamContext {
-  private val windowLength: Int = 100
-  private val slideInterval: Int = 10000
+  private val windowLength: Int = 1000000
+  private val slideInterval: Int = 100000
 
-  // override def confParams: List[(String, String)] =
-  //   List(("spark.cassandra.connection.host", cassandraHosts))
   override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 500
-  override def applicationName: String = "BucketMatch"
+  override def streamingRate: Int = 750 // Hasn't been calculated
+  override def applicationName: String = "BucketCount"
 
   override def streamLogic: Unit = {
     import com.concord.utils.EnrichedStreams._
@@ -41,9 +39,9 @@ class BucketMatchBenchmark(
   }
 }
 
-object BucketMatchBenchmark extends App {
+object BucketCountBenchmark extends App {
   val argHelper = new SparkArgHelper(args)
-  new BucketMatchBenchmark(
+  new BucketCountBenchmark(
     argHelper.CliArgs.cassandraKeyspace,
     argHelper.CliArgs.cassandraTable,
     argHelper.CliArgs.cassandraHosts,
