@@ -67,29 +67,27 @@ class Deduplication(
   }
 }
 
-
-
 object Deduplication extends App {
-class ApproxArgs(args: Array[String]) {
-  object cli {
-    @CLIOption(name = "-kafka_brokers", usage = "i.e. localhost:9092,1.1.1.2:9092")
-    var kafkaBrokers: String = ""
-    @CLIOption(name = "-output_topic", usage = "kafka topics separated by ,")
-    var outputTopic: String = "approx_uniq"
-    @CLIOption(name = "-input_topic", usage = "kafka topics separated by ,")
-    var kafkaTopics: String = "liberty"
+  class ApproxArgs(args: Array[String]) {
+    object cli {
+      @CLIOption(name = "-kafka_brokers", usage = "i.e. localhost:9092,1.1.1.2:9092")
+      var kafkaBrokers: String = ""
+      @CLIOption(name = "-output_topic", usage = "kafka topics separated by ,")
+      var outputTopic: String = "approx_uniq"
+      @CLIOption(name = "-input_topic", usage = "kafka topics separated by ,")
+      var kafkaTopics: String = "liberty"
+    }
+    val parser = new CmdLineParser(cli)
+    try {
+      import scala.collection.JavaConversions._
+      parser.parseArgument(args.toList)
+    } catch {
+      case e: CmdLineException =>
+        print(s"Error:${e.getMessage}\n Usage:\n")
+        parser.printUsage(System.out)
+        System.exit(1)
+    }
   }
-  val parser = new CmdLineParser(cli)
-  try {
-    import scala.collection.JavaConversions._
-    parser.parseArgument(args.toList)
-  } catch {
-    case e: CmdLineException =>
-      print(s"Error:${e.getMessage}\n Usage:\n")
-      parser.printUsage(System.out)
-      System.exit(1)
-  }
-}
   val argv = new ApproxArgs(args)
   println(s"Arguments: ${argv.cli}")
   new Deduplication(

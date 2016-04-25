@@ -36,7 +36,7 @@ class ApproxDeduplication(
   )
 
   def batchInterval: Duration = Seconds(1)
-  def streamingRate: Int = 8000
+  def streamingRate: Int = 500
   def applicationName: String = "ApproxDeduplication"
   def start(): Unit = {
     val sparkContext = new SparkContext(defaultSparkConf)
