@@ -5,11 +5,13 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-import scala.collection.mutable.{Queue => MutableQueue}
+import scala.collection.mutable.{ Queue => MutableQueue }
 
 object EnrichedStreams {
-  /** Implicit cast that allows a dstream to group its records into 'counting'
-    * windows. More info: (https://msdn.microsoft.com/en-us/library/ee842704.aspx) */
+  /**
+   * Implicit cast that allows a dstream to group its records into 'counting'
+   * windows. More info: (https://msdn.microsoft.com/en-us/library/ee842704.aspx)
+   */
   implicit class CountingDStream[T: ClassTag](@transient val dstream: DStream[T])
       extends Serializable {
     /**
@@ -28,18 +30,20 @@ object EnrichedStreams {
     }
 
     /**
-      * Transforms a DStream[T] into a DStream[Iterable[T]] into discrete
-      * groups defined by the parameters 'windowLength' (# of records in window) and
-      * 'slideInterval' (# of records until next opened window)
-      */
+     * Transforms a DStream[T] into a DStream[Iterable[T]] into discrete
+     * groups defined by the parameters 'windowLength' (# of records in window) and
+     * 'slideInterval' (# of records until next opened window)
+     */
     def countingWindow(
       windowLength: Int,
       slideInterval: Int
     )(implicit queue: MutableQueue[RDD[T]]): DStream[Iterable[T]] = {
       val leftoverStream = dstream.context.queueStream(queue, false)
 
-      /** Create stream that combines previous batches open windows with new
-        * incoming records, then transform each rdd to split records */
+      /**
+       * Create stream that combines previous batches open windows with new
+       * incoming records, then transform each rdd to split records
+       */
       val ret = leftoverStream.union(dstream).transform(rdd => {
         val isOpened = (w: (Iterable[T])) => w.size < windowLength
         val counts = rdd.count.toInt

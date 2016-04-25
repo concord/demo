@@ -7,7 +7,7 @@ import org.apache.spark.streaming.{ Duration, Seconds }
 import org.apache.spark.streaming.dstream._
 import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.{Queue => MutableQueue}
+import scala.collection.mutable.{ Queue => MutableQueue }
 
 class BucketCountBenchmark(
   override val brokers: String, override val topics: Set[String]
@@ -39,7 +39,7 @@ class BucketCountBenchmark(
       .foreachRDD(rdd => {
         val distinct = rdd.distinct
         println("RDD count: " + distinct.count)
-     })
+      })
   }
 }
 

@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.streaming._
 
-import scala.collection.mutable.{Queue => MutableQueue}
+import scala.collection.mutable.{ Queue => MutableQueue }
 
 class BucketMatchBenchmark(
   keyspace: String,

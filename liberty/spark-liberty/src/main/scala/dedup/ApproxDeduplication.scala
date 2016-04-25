@@ -9,35 +9,13 @@ import org.apache.spark.broadcast.Broadcast
  */
 import com.twitter.algebird._
 import org.kohsuke.args4j.{ CmdLineException, CmdLineParser, Option => CLIOption }
-import org.apache.kafka.clients.producer.{
-  KafkaProducer,
-  ProducerRecord
-}
+import org.apache.kafka.clients.producer.ProducerRecord
 import kafka.serializer.StringDecoder
 import org.apache.spark.{ SparkConf, SparkContext }
 import org.apache.spark.streaming.Duration
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.kafka.KafkaUtils
 import org.apache.spark.streaming.dstream.DStream
-
-object KafkaSink {
-  @transient private var producer: KafkaProducer[String, String] = null;
-  def getInstance(brokers: String): KafkaProducer[String, String] = {
-    if (producer == null) {
-      synchronized {
-        val props = new java.util.Properties()
-        props.put("bootstrap.servers", brokers)
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        producer = new KafkaProducer[String, String](props)
-        sys.addShutdownHook {
-          producer.close
-        }
-      }
-    }
-    producer
-  }
-}
 
 class ApproxDeduplication(
     val brokers: String,
@@ -67,18 +45,31 @@ class ApproxDeduplication(
       .createDirectStream[String, String, StringDecoder, StringDecoder](
         streamingSparkContext, kafkaParams, topics
       )
+
+    val kProbFalsePositive = 0.08
+    val kPopulation = 265569231
+    val kSeed = 1
+    val bfMonoid = BloomFilter(kPopulation, kProbFalsePositive, kSeed)
+    var bf = bfMonoid.zero
+
     val kafkaOut = stream.flatMap { line =>
       LogParser.parse(line._2) match {
         case Some(x) =>
-          Some((x.buildKey.toString, x.buildValue))
+          val (newBF, contained) = bf.checkAndAdd(x.msg)
+          if (contained.isTrue) {
+            None
+          } else {
+            bf = newBF
+            Some((x.buildKey.toString, x.buildValue))
+          }
         case None => None
       }
     }
+
     kafkaOut.foreachRDD(rdd => {
-      // Note: you can only do distinct on THIS RDD, not on
       // the set of rdd's w/out a bloomfilter which never finishes
       //
-      rdd.distinct.foreachPartition(part => {
+      rdd.foreachPartition(part => {
         val producer = KafkaSink.getInstance(brokers)
         part.foreach(record =>
           producer.send(new ProducerRecord(outputTopic, record._1, record._2)))
@@ -89,28 +80,27 @@ class ApproxDeduplication(
   }
 }
 
-class ApproxArgs(args: Array[String]) {
-  object cli {
-    @CLIOption(name = "-kafka_brokers", usage = "i.e. localhost:9092,1.1.1.2:9092")
-    var kafkaBrokers: String = ""
-    @CLIOption(name = "-output_topic", usage = "kafka topics separated by ,")
-    var outputTopic: String = "approx_uniq"
-    @CLIOption(name = "-input_topic", usage = "kafka topics separated by ,")
-    var kafkaTopics: String = "liberty"
-  }
-  val parser = new CmdLineParser(cli)
-  try {
-    import scala.collection.JavaConversions._
-    parser.parseArgument(args.toList)
-  } catch {
-    case e: CmdLineException =>
-      print(s"Error:${e.getMessage}\n Usage:\n")
-      parser.printUsage(System.out)
-      System.exit(1)
-  }
-}
-
 object ApproxDeduplication extends App {
+  class ApproxArgs(args: Array[String]) {
+    object cli {
+      @CLIOption(name = "-kafka_brokers", usage = "i.e. localhost:9092,1.1.1.2:9092")
+      var kafkaBrokers: String = ""
+      @CLIOption(name = "-output_topic", usage = "kafka topics separated by ,")
+      var outputTopic: String = "approx_uniq"
+      @CLIOption(name = "-input_topic", usage = "kafka topics separated by ,")
+      var kafkaTopics: String = "liberty"
+    }
+    val parser = new CmdLineParser(cli)
+    try {
+      import scala.collection.JavaConversions._
+      parser.parseArgument(args.toList)
+    } catch {
+      case e: CmdLineException =>
+        print(s"Error:${e.getMessage}\n Usage:\n")
+        parser.printUsage(System.out)
+        System.exit(1)
+    }
+  }
   val argv = new ApproxArgs(args)
   println(s"Arguments: ${argv.cli}")
   new ApproxDeduplication(
