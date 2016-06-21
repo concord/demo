@@ -1,7 +1,0 @@
-Comparative implementation of Flink features:
-
-Issues encountered:
-
-- No state integration for cassandra
-- Negative(overflow) memory manager heap size on JDK7
-- Event time windowing only works with parallelism set to 1(local context)
