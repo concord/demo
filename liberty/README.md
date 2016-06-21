@@ -3,11 +3,13 @@
 The liberty demo is a stream processor benchmark. This benchmark contains a variety
 of different tests all which use the
 [liberty data set](https://web.archive.org/web/20130604233714/http://www.cs.sandia.gov/~jrstear/logs/)
-as demo data.
+as demo data. The dataset was pre-loaded into a single topic of Kafka with 144 partitions. Then,
+a stream processor would consume the data from Kafka and write to Cassandra using their
+preferred/”best choice” API. All processing was performed within the stream processor.
 
-All tests assume that there is a kafka cluster that contains a topic that already has
-been prefilled with the entire liberty data set. Options such as topic name and
-kafka broker address are configurable. This benchmark is a work in progress. At the moment
+![diagram](./concord-liberty/meta/diagram.png)
+
+This benchmark is a work in progress. At the moment
 we have completed designing and recording results for the [Concord](http://concord.io) and
 the [Apache Spark](http://spark.apache.org) Streaming Frameworks. A blog post of the results
 will be linked to this README in the near future.
