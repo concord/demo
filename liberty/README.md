@@ -12,7 +12,7 @@ we have completed designing and recording results for the [Concord](http://conco
 the [Apache Spark](http://spark.apache.org) Streaming Frameworks. A blog post of the results
 will be linked to this README in the near future.
 
-# Tests
+## Single Message Tests
 
 #### Deduplication
 
@@ -30,6 +30,8 @@ Consume Topic 1 and write a unique key to Cassandra for each message containing 
 #### Counting Events
 
 Consume Topic 1 and count all unique space-delimited strings, grouped by month and year
+
+## Windowed Tests
 
 #### Pattern Matching inside Time Window
 
