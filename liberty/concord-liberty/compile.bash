@@ -3,7 +3,7 @@
 set -e
 cur_dir=$(pwd)
 git_root=$(git rev-parse --show-toplevel)
-build_dir=$git_root/liberty/build
+build_dir=$git_root/liberty/concord-liberty/build
 nprocs=$(grep -c ^processor /proc/cpuinfo)
 
 mkdir -p $build_dir

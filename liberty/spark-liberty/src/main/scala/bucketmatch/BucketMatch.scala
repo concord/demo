@@ -23,8 +23,11 @@ class BucketMatchBenchmark(
   private val windowLength: Int = 100000
   private val slideInterval: Int = 100000
 
-  override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 750 // Hasn't been calculated
+  override def confParams: List[(String, String)] =
+    List(("spark.cassandra.connection.host", cassandraHosts))
+
+  override def batchInterval: Duration = Seconds(7)
+  override def streamingRate: Int = 750
   override def applicationName: String = "BucketMatch"
 
   override def streamLogic: Unit = {

@@ -16,8 +16,8 @@ class BucketCountBenchmark(
   private val windowLength: Int = 1000000
   private val slideInterval: Int = 100000
 
-  override def batchInterval: Duration = Seconds(5)
-  override def streamingRate: Int = 500 // ... comment
+  override def batchInterval: Duration = Seconds(5) // Unpredictable!
+  override def streamingRate: Int = 500
   override def applicationName: String = "BucketCount"
 
   override def streamLogic: Unit = {

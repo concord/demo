@@ -20,7 +20,7 @@ class TimeCountBenchmark(
   private val slideInterval: Duration = Seconds(1)
 
   override def batchInterval: Duration = Seconds(1)
-  override def streamingRate: Int = 750
+  override def streamingRate: Int = 300
   override def applicationName: String = "TimeCount"
   override def streamLogic: Unit = {
     stream

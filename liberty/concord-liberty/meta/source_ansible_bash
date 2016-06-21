@@ -1,4 +1,4 @@
-DIR=$(git rev-parse --show-toplevel)/liberty/meta
+DIR=$(git rev-parse --show-toplevel)/liberty/concord-liberty/meta
 if [[ -e ${DIR}/tmp/bin/activate ]]; then
     source ${DIR}/tmp/bin/activate
 else
