@@ -9,28 +9,20 @@ DECISIONDATE -> status_date
 DECISION -> status
 DEVICENAME -> product
 """
-
+import os
 import time
 import json
-
+import csv
+import requests
+from zipfile import ZipFile
 
 def time_millis():
     return int(round(time.time() * 1000))
 
 
 class MDevice:
-
-    def __init__(
-        self,
-        id,
-        company,
-        person,
-        index_date,
-        device_index_date,
-        status_date,
-        status,
-        product,
-        ):
+    def __init__(self, id, company, person, index_date,
+                 device_index_date, status_date, status, product,):
         self.id = id
         self.company = company
         self.person = person
@@ -39,9 +31,11 @@ class MDevice:
         self.status_date = status_date
         self.status = status
         self.product = product
-
     def to_json(self):
-        return json.dumps(self, default=lambda o: o.__dict__, indent=2)
+        try:
+            return json.dumps(self, default=lambda o: o.__dict__, indent=2)
+        except:
+            return None
 
 
 # ['KNUMBER',       == 0
@@ -71,28 +65,74 @@ def line_to_mdevice(line_arr):
     if len(line_arr) != 22:
         return None
     a = line_arr  # alias
-    return MDevice(
-        id=a[0],
-        company=a[1],
-        person=a[3],
-        index_date=time_millis(),
-        device_index_date=a[10],
-        status_date=a[11],
-        status=a[12],
-        product=a[21],
-        )
+    return MDevice(id=a[0], company=a[1], person=a[2], index_date=time_millis(),
+                   device_index_date=a[10], status_date=a[11], status=a[12],
+                   product=a[21])
 
+# returns a tuple of name.zip and name.txt from the url
+def download_zip_url(url):
+    zip_name = os.path.basename(url)
+    if zip_name == None or len(zip_name) <=0:
+        return (None,None)
+    with open(zip_name, 'wb') as handle:
+        req = requests.get(url)
+        if not req.ok:
+            print "Something went wrong downloading the zip archive ", zip_name
+            return (None,None)
+        else:
+            for block in req.iter_content(1024):
+                handle.write(block)
+    def zip_name_to_txt_name(n):
+        name_parts = n.split(".")
+        name_parts = name_parts[:len(name_parts)-1] # minus last elem
+        name_parts.append("txt")
+        return ".".join(name_parts)
 
-import csv
-with open('pmn9195.txt', 'rb') as csvfile:
-    reader = csv.reader(csvfile, delimiter='|')
-    counter = 0
-    try:
-        for row in reader:
-            counter = counter + 1
-            if counter > 1:
-                d = line_to_mdevice(row)
-                if d != None:
-                    print d.to_json()
-    except Exception, e:
-        print 'exception: ', e, counter
+    return (zip_name, zip_name_to_txt_name(zip_name))
+
+class MedicalDeviceIterator:
+    def __init__(self, url):
+        self.url = url
+        (zip_name, text_name) = download_zip_url(self.url)
+        if zip_name == None or text_name == None:
+            raise Exception("Errors downloading url")
+        self.zip_name = zip_name
+        self.text_name = text_name
+        self.zip_handle = ZipFile(self.zip_name, 'r')
+        self.handle = self.zip_handle.open(name=self.text_name, mode='r')
+        self.reader = csv.reader(self.handle, delimiter='|')
+        next(self.reader) # skip the header
+        self.finished_parsing = False
+        self.bad_records_parsed = 0
+        self.records_parsed = 0
+
+    def __iter__(self):
+        return self
+
+    def lines_read(self):
+        return self.records_parsed
+
+    # Returns a MDevice obj, and skips over bad records
+    def next(self):
+        if self.finished_parsing == True:
+            raise StopIteration
+        while True:
+            try:
+                line = next(self.reader)
+                self.records_parsed = self.records_parsed + 1
+                return line_to_mdevice(line)
+            except StopIteration:
+                print "Records parsed: ", self.records_parsed
+                self.finished_parsing = True
+                try:
+                    self.handle.close()
+                    self.zip_handle.close()
+                except Exception as e:
+                    print "Exception closing readers ", e
+                raise StopIteration
+            except Exception as e:
+                self.bad_records_parsed = self.bad_records_parsed + 1
+                print "Unhandled error in url parsing, skipping record: ", e
+
+for mdevice_obj in MedicalDeviceIterator("http://www.accessdata.fda.gov/premarket/ftparea/pmn96cur.zip"):
+    print mdevice_obj.to_json()
