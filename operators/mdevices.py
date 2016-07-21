@@ -66,7 +66,7 @@ class MedicalDevicesUrlGenerator(Computation):
         raise Exception('process_record not implemented')
     def metadata(self):
         return Metadata(
-            name='mdevices',
+            name='m-devices',
             istreams=[],
             ostreams=['m-device-urls'])
 

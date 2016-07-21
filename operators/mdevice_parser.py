@@ -152,7 +152,7 @@ class MedicalDevicesParser(Computation):
             ctx.produce_record("m-device-urls", obj.id, obj.to_json())
     def metadata(self):
         return Metadata(
-            name='mdevice_parser',
+            name='m-device-parser',
             istreams=['m-device-urls'],
             ostreams=['m-devices-json'])
 
