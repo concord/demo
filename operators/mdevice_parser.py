@@ -140,20 +140,23 @@ class MedicalDeviceIterator:
                 self.bad_records_parsed = self.bad_records_parsed + 1
                 print "Unhandled error in url parsing, skipping record: ", e
 
-# for mdevice_obj in MedicalDeviceIterator("http://www.accessdata.fda.gov/premarket/ftparea/pmn96cur.zip"):
-#     print mdevice_obj.to_json()
-
 class MedicalDevicesParser(Computation):
     def init(self, ctx): pass
     def destroy(self): pass
     def process_timer(self, ctx, key, time): pass
     def process_record(self, ctx, record):
-        for obj in MedicalDeviceIterator(str(record.value)):
-            ctx.produce_record("m-device-urls", obj.id, obj.to_json())
+        for obj in MedicalDeviceIterator(str(record.data)):
+            try:
+                ctx.produce_record("m-devices-json",
+                                   bytes(obj.id),
+                                   bytes(obj.to_json()))
+            except Exception as e:
+                print "Exception producing record", e
+
     def metadata(self):
         return Metadata(
             name='m-device-parser',
             istreams=['m-device-urls'],
             ostreams=['m-devices-json'])
 
-serve_computation(MedicalDeviceParser())
+serve_computation(MedicalDevicesParser())
