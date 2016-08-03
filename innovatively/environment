@@ -1,7 +1,8 @@
 #!/bin/bash
+# set -e
 venv=$(which virtualenv)
 venv_name="$(basename $(git rev-parse --show-toplevel))_venv"
-venv_path=$(git rev-parse --show-toplevel)/${venv_name}
+venv_path=$(git rev-parse --show-toplevel)/innovatively/${venv_name}
 activate_path=${venv_path}/bin/activate
 if [[ -e ${activate_path} ]]; then
     source ${activate_path}
