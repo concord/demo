@@ -3,7 +3,7 @@
   "zookeeper_path": "/concord",
   "executable_arguments": ["mdevices.py"],
   "executable_name": "runner.bash",
-  "compress_files": ["mdevices.py", "runner.bash"],
+  "compress_files": ["mdevices.py", "runner.bash", "demo_venv"],
   "computation_name": "m-devices",
   "mem": 512,
   "cpus": 1.0
