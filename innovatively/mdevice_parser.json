@@ -3,7 +3,7 @@
   "zookeeper_path": "/concord",
   "executable_arguments": ["mdevice_parser.py"],
   "executable_name": "runner.bash",
-  "compress_files": ["mdevice_parser.py", "runner.bash"],
+  "compress_files": ["mdevice_parser.py", "runner.bash", "demo_venv"],
   "computation_name": "m-device-parser",
   "mem": 512,
   "cpus": 1.0
