@@ -1,0 +1,10 @@
+{
+  "zookeeper_hosts": "localhost:2181",
+  "zookeeper_path": "/concord",
+  "executable_arguments": ["source.py"],
+  "executable_name": "runner.bash",
+  "compress_files": ["source.py", "runner.bash"],
+  "computation_name": "car-alert-source",
+  "mem": 512,
+  "cpus": 1.0
+}
