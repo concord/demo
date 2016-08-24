@@ -20,11 +20,9 @@ class CarAlertFilter(Computation):
         if float(car['engine_needs_repair']) >= ENGINE_NEEDS_REPAIR_THRESHOLD:
             self.concord_logger.info("Car needs repair %s" % record.data)
     def metadata(self):
-        # demo groupings
-        # istreams=[('alerts', StreamGrouping.ROUND_ROBIN)],
         return Metadata(
             name='car-filter',
-            istreams=[('alerts', StreamGrouping.GROUP_BY)],
+            istreams=[('alerts', StreamGrouping.ROUND_ROBIN)],
             ostreams=[])
 
 serve_computation(CarAlertFilter())
